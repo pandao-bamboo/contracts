@@ -1,0 +1,41 @@
+{
+  "name": "@pandao/contracts",
+  "version": "0.0.1",
+  "description": "Insurance Liquidity Pool Implementation",
+  "main": "index.js",
+  "scripts": {
+    "dev": "npm run compile && npx buidler ",
+    "deploy": "npx buidler run scripts/deploy.js",
+    "compile": "npx buidler compile",
+    "test": "npx buidler test",
+    "coverage": "npm run build && npx buidler coverage --temp artifacts --network coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pandao-bamboo/contracts.git"
+  },
+  "author": "PanDAO",
+  "license": "GPL-3.0-only",
+  "bugs": {
+    "url": "https://github.com/pandao-bamboo/contracts/issues"
+  },
+  "homepage": "https://github.com/pandao-bamboo/contracts",
+  "devDependencies": {
+    "@nomiclabs/buidler": "^1.1.2",
+    "@nomiclabs/buidler-ethers": "^1.1.2",
+    "@nomiclabs/buidler-etherscan": "^1.1.2",
+    "@nomiclabs/buidler-waffle": "^1.1.2",
+    "chai": "^4.2.0",
+    "ethereum-waffle": "^2.3.2",
+    "ethers": "^4.0.44"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "@pie-dao/mock-contracts": "^0.0.7",
+    "@pie-dao/proxy": "^0.0.6",
+    "dotenv": "^8.2.0",
+    "solidity-coverage": "^0.7.4"
+  }
+}

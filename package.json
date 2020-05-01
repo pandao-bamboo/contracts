@@ -4,7 +4,6 @@
   "description": "Insurance Liquidity Pool Implementation",
   "main": "index.js",
   "scripts": {
-    "dev": "npm run compile && npx buidler ",
     "deploy": "npx buidler run scripts/deploy.js",
     "compile": "npx buidler compile",
     "test": "npx buidler test",

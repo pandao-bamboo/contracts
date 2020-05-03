@@ -9,6 +9,9 @@ import "../../node_modules/@openzeppelin/contracts-ethereum-package/contracts/to
 import "../../node_modules/@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mintable.sol";
 import "../../node_modules/@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
 
+// PanDAO
+import "../TokenStorage.sol";
+
 
 contract CollateralToken is
     ERC20Detailed,
@@ -19,5 +22,7 @@ contract CollateralToken is
     constructor(string _name, string _symbol, uint8 _decimals)
         public
         ERC20Detailed(_name, _symbol, _decimals)
-    {}
+    {
+        owner = msg.sender;
+    }
 }

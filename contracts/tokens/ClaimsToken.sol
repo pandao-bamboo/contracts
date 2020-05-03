@@ -1,7 +1,28 @@
 pragma solidity ^0.6.4;
 
-// used for console logging
-import "@nomiclabs/buidler/console.sol";
+/// Utilities
+import "../../node_modules/@nomiclabs/buidler/console.sol";
+
+/// Inheritance
+import "../../node_modules/@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
+import "../../node_modules/@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Burnable.sol";
+import "../../node_modules/@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mintable.sol";
+import "../../node_modules/@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
+
+/// PanDAO
+import "../TokenStorage.sol";
 
 
-contract ClaimsToken {}
+contract ClaimsToken is ERC20Detailed, ERC20Burnable, ERC20Mintable, Ownable {
+    constructor(string _name, string _symbol, uint8 _decimals)
+        public
+        ERC20Detailed(_name, _symbol, _decimals)
+    {
+        owner = msg.sender;
+    }
+
+    // Public
+    // override _mint, _burn, _move, _push, _pull, allownace, balanceOf, totalSupply, name,
+    // symbol, approve, increaseApproval, decreaseApproval, transfer, transferFrom
+    // to use local storage
+}

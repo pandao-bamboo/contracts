@@ -1,29 +1,56 @@
-// We require the Buidler Runtime Environment explicitly here. This is optional 
-// but useful for running the script in a standalone fashion through `node <script>`.
-// When running the script with `buidler run <script>` you'll find the Buidler
-// Runtime Environment's members available in the global scope.
-const bre = require("@nomiclabs/buidler");
-
+// This is a script for deploying your contracts. You can adapt it to deploy
+// yours, or create new ones.
 async function main() {
-  // Buidler always runs the compile task when running scripts through it. 
-  // If this runs in a standalone fashion you may want to call compile manually 
-  // to make sure everything is compiled
-  // await bre.run('compile');
+  // This is just a convenience check
+  if (network.name === "buidlerevm") {
+    console.warn(
+      "You are trying to deploy a contract to the Buidler EVM network, which" +
+      "gets automatically created and destroyed every time. Use the Buidler" +
+      " option '--network localhost'"
+    );
+  }
 
-  // We get the contract to deploy
-  const Greeter = await ethers.getContractFactory("Greeter");
-  const greeter = await Greeter.deploy("Hello, Buidler!");
+  // ethers is avaialble in the global scope
+  const [deployer] = await ethers.getSigners();
+  console.log(
+    "Deploying the contracts with the account:",
+    await deployer.getAddress()
+  );
 
-  await greeter.deployed();
+  console.log("Account balance:", (await deployer.getBalance()).toString());
 
-  console.log("Greeter deployed to:", greeter.address);
+  const Token = await ethers.getContractFactory("Token");
+  const token = await Token.deploy();
+  await token.deployed();
+
+  console.log("Token address:", token.address);
+
+  // We also save the contract's artifacts and address in the frontend directory
+  saveFrontendFiles(token);
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
+function saveFrontendFiles(token) {
+  const fs = require("fs");
+  const contractsDir = __dirname + "/../frontend/src/contracts";
+
+  if (!fs.existsSync(contractsDir)) {
+    fs.mkdirSync(contractsDir);
+  }
+
+  fs.writeFileSync(
+    contractsDir + "/contract-address.json",
+    JSON.stringify({ Token: token.address }, undefined, 2)
+  );
+
+  fs.copyFileSync(
+    __dirname + "/../artifacts/Token.json",
+    contractsDir + "/Token.json"
+  );
+}
+
 main()
   .then(() => process.exit(0))
-  .catch(error => {
+  .catch((error) => {
     console.error(error);
     process.exit(1);
   });

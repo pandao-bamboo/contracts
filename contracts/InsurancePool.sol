@@ -1,9 +1,7 @@
 pragma solidity ^0.6.4;
 
-// FOR DEVELOPMENT
 import "../node_modules/@nomiclabs/buidler/console.sol";
-
-import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
+import "../node_modules/@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
 
 
 contract InsurancePool is Ownable {
@@ -24,10 +22,21 @@ contract InsurancePool is Ownable {
         uint256 _serviceFeeRate,
         uint256 _claimPenalty
     ) external {
-        insurancePool storage insurancePool = insurancePoolStorage();
-        
-        require(address(insurancePool.insuredTokenAddress) === address(0), "InsurancePool.create: Insurance Pool already exists.");
-        
+        insurancePool storage ip = load();
+
+        require(
+            address(ip.insuredTokenAddress) == address(_tokenAddressToInsure),
+            "InsurancePool.create: Insurance Pool already exists."
+        );
+        require(
+            _tokenAddressToInsure != address(0),
+            "InsurancePool.create: _tokenAddressToInsure can not be 0x00"
+        );
+
+        ip.insuredTokenAddress = _tokenAddressToInsure;
+        ip.insureeFeeRate = _insureeFeeRate;
+        ip.serviceFeeRate = _serviceFeeRate;
+        ip.claimPenalty = _claimPenalty;
     }
 
     // load insurance pool storage

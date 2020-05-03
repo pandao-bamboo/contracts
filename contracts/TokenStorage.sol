@@ -2,10 +2,10 @@ pragma solidity ^0.6.4;
 
 
 contract TokenStorage {
-    bytes32 public constant COLLATERAL_TOKEN_STORAGE = keccak256(
+    bytes32 public constant collateralTokenStorage = keccak256(
         "CollateralTokenStorage.storage.location"
     );
-    bytes32 public constant CLAIMS_TOKEN_STORAGE = keccak256(
+    bytes32 public constant claimsTokenStorage = keccak256(
         "ClaimsTokenStorage.storage.location"
     );
 
@@ -18,7 +18,7 @@ contract TokenStorage {
     }
 
     /// @notice Loads the collateral token pool storage
-    /// @param  _storageLocation TokenStorage.STORAGE_CONSTANT
+    /// @param  _storageLocation TokenStorage.tokenStorage
     /// @return s tokenStorage
     function load(bytes32 _storageLocation)
         internal

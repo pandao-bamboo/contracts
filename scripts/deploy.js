@@ -19,34 +19,34 @@ async function main() {
 
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
-  const Token = await ethers.getContractFactory("Token");
-  const token = await Token.deploy();
-  await token.deployed();
+  const TokenFactory = await ethers.getContractFactory("TokenFactory");
+  const tokenFactory = await TokenFactory.deploy();
+  await tokenFactory.deployed();
 
-  console.log("Token address:", token.address);
+  console.log("TokenFactory address:", tokenFactory.address);
 
   // We also save the contract's artifacts and address in the frontend directory
-  saveFrontendFiles(token);
+  // saveFrontendFiles(token);
 }
 
-function saveFrontendFiles(token) {
-  const fs = require("fs");
-  const contractsDir = __dirname + "/../frontend/src/contracts";
+// function saveFrontendFiles(token) {
+//   const fs = require("fs");
+//   const contractsDir = __dirname + "/../frontend/src/contracts";
 
-  if (!fs.existsSync(contractsDir)) {
-    fs.mkdirSync(contractsDir);
-  }
+//   if (!fs.existsSync(contractsDir)) {
+//     fs.mkdirSync(contractsDir);
+//   }
 
-  fs.writeFileSync(
-    contractsDir + "/contract-address.json",
-    JSON.stringify({ Token: token.address }, undefined, 2)
-  );
+//   fs.writeFileSync(
+//     contractsDir + "/contract-address.json",
+//     JSON.stringify({ Token: token.address }, undefined, 2)
+//   );
 
-  fs.copyFileSync(
-    __dirname + "/../artifacts/Token.json",
-    contractsDir + "/Token.json"
-  );
-}
+//   fs.copyFileSync(
+//     __dirname + "/../artifacts/Token.json",
+//     contractsDir + "/Token.json"
+//   );
+// }
 
 main()
   .then(() => process.exit(0))

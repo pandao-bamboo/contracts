@@ -1,61 +1,63 @@
-pragma solidity ^0.6.4;
+pragma solidity ^0.6.0;
 
 /// Utilities
-import "../../node_modules/@nomiclabs/buidler/console.sol";
+import "@nomiclabs/buidler/console.sol";
 import "../libraries/StringHelper.sol";
 
 /// Imports
-import "../../node_modules/@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/presets/ERC20PresetMinterPauser.sol";
+
 
 /// PanDAO
-import "../tokens/ClaimsToken.sol";
-import "../tokens/CollateralToken.sol";
-import "../TokenStorage.sol";
-
 
 contract TokenFactory is Ownable {
-    function createTokens(string _insurableTokenSymbol) public onlyOwner {
+    function createTokens(string memory _insurableTokenSymbol)
+        public
+        onlyOwner
+        returns (string memory)
+    {
         /// Collateral token
         _createCollateralToken(_insurableTokenSymbol);
-        console.log("CollateralToken", collateralToken);
 
         /// Claims token
         _createClaimsToken(_insurableTokenSymbol);
-        console.log("ClaimsToken", claimsToken);
     }
 
     /// Private
-    function _createClaimsToken(string _insurableTokenSymbol) internal {
-        bytes32 claimsTokenStorage = TokenStorage.load(
-            TokenStorage.claimsTokenStorage
-        );
-        string claimsTokenName = StringHelper.concat(
+    function _createClaimsToken(string memory _insurableTokenSymbol)
+        internal
+        returns (string memory)
+    {
+        string memory claimsTokenName = StringHelper.concat(
             "PanDAO Claims Token - ",
             _insurableTokenSymbol
         );
-        ClaimsToken claimsToken = new ClaimsToken(claimsTokenName, "mPAN", 18);
 
-        claimsTokenStorage().name = claimsToken.name;
-        claimsTokenStorage().symbol = claimsToken.symbol;
-        claimsTokenStorage().totalSupply = 0;
+        ERC20PresetMinterPauser claimsToken = new ERC20PresetMinterPauser(
+            claimsTokenName,
+            "mPAN"
+        );
+
+        console.log("Created Claims Token - ", claimsToken.name());
+        return claimsToken.name();
     }
 
-    function _createCollateralToken(string _insurableTokenSymbol) internal {
-        bytes32 collateralTokenStorage = TokenStorage.load(
-            TokenStorage.collateralTokenStorage
-        );
-        string collateralTokenName = StringHelper.concat(
+    function _createCollateralToken(string memory _insurableTokenSymbol)
+        internal
+        returns (string memory)
+    {
+        string memory collateralTokenName = StringHelper.concat(
             "PanDAO Collateral Token - ",
             _insurableTokenSymbol
         );
-        CollateralToken collateralToken = new CollateralToken(
+
+        ERC20PresetMinterPauser collateralToken = new ERC20PresetMinterPauser(
             collateralTokenName,
-            "cPAN",
-            18
+            "cPAN"
         );
 
-        collateralTokenStorage().name = collateralToken.name;
-        collateralTokenStorage().symbol = collateralToken.symbol;
-        collateralTokenStorage().totalSupply = 0;
+        console.log("Created Collateral Token - ", collateralToken.name());
+        return collateralToken.name();
     }
 }

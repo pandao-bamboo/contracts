@@ -1,12 +1,12 @@
-pragma solidity ^0.6.4;
+pragma solidity ^0.6.0;
 
 
 library StringHelper {
-    function concat(bytes memory a, bytes memory b)
+    function concat(string memory a, string memory b)
         internal
         pure
-        returns (bytes memory)
+        returns (string memory)
     {
-        return abi.encodePacked(a, b);
+        return string(abi.encodePacked(a, b));
     }
 }

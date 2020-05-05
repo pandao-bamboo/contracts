@@ -6,6 +6,8 @@
   "scripts": {
     "deploy": "npx buidler run scripts/deploy.js --network localhost",
     "compile": "npx buidler compile",
+    "ethereum": "npx buidler node",
+    "console": "npx buidler console",
     "test": "npx buidler test",
     "coverage": "yarn run compile && npx buidler coverage --temp artifacts"
   },

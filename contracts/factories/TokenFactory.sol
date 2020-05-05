@@ -1,21 +1,33 @@
-pragma solidity ^0.6.0;
+pragma solidity 0.6.6;
 
 /// Utilities
-import "@nomiclabs/buidler/console.sol";
+import "../../node_modules/@nomiclabs/buidler/console.sol";
 import "../libraries/StringHelper.sol";
 
 /// Imports
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/presets/ERC20PresetMinterPauser.sol";
+import "../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
+import "../../node_modules/@openzeppelin/contracts/presets/ERC20PresetMinterPauser.sol";
 
-
-/// PanDAO
 
 contract TokenFactory is Ownable {
+    /// Events
+    event CollateralTokenCreated(
+        string _tokenName,
+        string _tokenSymbol,
+        address indexed _tokenAddress
+    );
+    event ClaimsTokenCreated(
+        string _tokenName,
+        string _tokenSymbol,
+        address indexed _tokenAddress
+    );
+
+    // Constructor
+
+    // Public
     function createTokens(string memory _insurableTokenSymbol)
         public
         onlyOwner
-        returns (string memory)
     {
         /// Collateral token
         _createCollateralToken(_insurableTokenSymbol);
@@ -25,10 +37,7 @@ contract TokenFactory is Ownable {
     }
 
     /// Private
-    function _createClaimsToken(string memory _insurableTokenSymbol)
-        internal
-        returns (string memory)
-    {
+    function _createClaimsToken(string memory _insurableTokenSymbol) private {
         string memory claimsTokenName = StringHelper.concat(
             "PanDAO Claims Token - ",
             _insurableTokenSymbol
@@ -39,13 +48,16 @@ contract TokenFactory is Ownable {
             "mPAN"
         );
 
-        console.log("Created Claims Token - ", claimsToken.name());
-        return claimsToken.name();
+        emit ClaimsTokenCreated(
+            claimsToken.name(),
+            claimsToken.symbol(),
+            address(claimsToken)
+        );
+        console.log("### Created Claims Token ### - ", claimsToken.name());
     }
 
     function _createCollateralToken(string memory _insurableTokenSymbol)
-        internal
-        returns (string memory)
+        private
     {
         string memory collateralTokenName = StringHelper.concat(
             "PanDAO Collateral Token - ",
@@ -57,7 +69,14 @@ contract TokenFactory is Ownable {
             "cPAN"
         );
 
-        console.log("Created Collateral Token - ", collateralToken.name());
-        return collateralToken.name();
+        emit CollateralTokenCreated(
+            collateralToken.name(),
+            collateralToken.symbol(),
+            address(collateralToken)
+        );
+        console.log(
+            "### Created Collateral Token ### - ",
+            collateralToken.name()
+        );
     }
 }

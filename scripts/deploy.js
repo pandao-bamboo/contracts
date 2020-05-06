@@ -19,6 +19,8 @@ async function main() {
 
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
+
+  // Deploy Contracts
   const TokenFactory = await ethers.getContractFactory("TokenFactory");
   const tokenFactory = await TokenFactory.deploy();
   await tokenFactory.deployed();

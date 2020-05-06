@@ -5,11 +5,11 @@ import "../../node_modules/@nomiclabs/buidler/console.sol";
 import "../libraries/StringHelper.sol";
 
 /// Imports
-import "../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
+import "../../node_modules/@openzeppelin/contracts/access/AccessControl.sol";
 import "../../node_modules/@openzeppelin/contracts/presets/ERC20PresetMinterPauser.sol";
 
 
-contract TokenFactory is Ownable {
+contract TokenFactory is Manager, AccessControl {
     /// Events
     event CollateralTokenCreated(
         string _tokenName,

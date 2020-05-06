@@ -28,31 +28,31 @@ contract Storage is Ownable {
 
     /// Getters
     function getUint(bytes32 _key) external view returns (uint256) {
-        require(_key[0].length == 32);
+        require(_key[0].length != 0);
 
         return uIntStorage[_key];
     }
 
     function getString(bytes32 _key) external view returns (string memory) {
-        require(_key[0].length == 32);
+        require(_key[0].length != 0);
 
         return stringStorage[_key];
     }
 
     function getAddress(bytes32 _key) external view returns (address) {
-        require(_key[0].length == 32);
+        require(_key[0].length != 0);
 
         return addressStorage[_key];
     }
 
     function getBool(bytes32 _key) external view returns (bool) {
-        require(_key[0].length == 32);
+        require(_key[0].length != 0);
 
         return boolStorage[_key];
     }
 
     function getInt(bytes32 _key) external view returns (int256) {
-        require(_key[0].length == 32);
+        require(_key[0].length != 0);
 
         return intStorage[_key];
     }

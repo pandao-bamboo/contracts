@@ -2,7 +2,7 @@ pragma solidity 0.6.6;
 
 /// Utilities
 import "../../node_modules/@nomiclabs/buidler/console.sol";
-import "../libraries/StringHelper.sol";
+import "../lib/StringHelper.sol";
 
 /// Imports
 import "../../node_modules/@openzeppelin/contracts/access/AccessControl.sol";

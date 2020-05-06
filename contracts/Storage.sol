@@ -3,6 +3,10 @@ pragma solidity 0.6.6;
 import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
 
+// PanDAO implementation of Eternal Storage(https://fravoll.github.io/solidity-patterns/eternal_storage.html)
+// Influenced by Rocket Pools implementation(https://github.com/rocket-pool/rocketpool/blob/master/contracts/RocketStorage.sol)
+// Storage only controllable by DAO Agent
+
 contract Storage is Ownable {
     mapping(bytes32 => uint256) private uIntStorage;
     mapping(bytes32 => string) private stringStorage;

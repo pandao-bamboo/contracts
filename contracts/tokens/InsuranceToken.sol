@@ -64,7 +64,7 @@ contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable, Manager {
      *
      * - the caller must have the `PAUSER_ROLE`.
      */
-    function unpause() public onlyOwner {
+    function unpause() public onlyAgent {
         _unpause();
     }
 

@@ -6,10 +6,11 @@ import "../libraries/StringHelper.sol";
 
 /// Imports
 import "../../node_modules/@openzeppelin/contracts/access/AccessControl.sol";
-import "../../node_modules/@openzeppelin/contracts/presets/ERC20PresetMinterPauser.sol";
+import "../tokens/InsuranceToken.sol";
+import "../Manager.sol";
 
 
-contract TokenFactory is Manager, AccessControl {
+contract TokenFactory is AccessControl, Manager {
     /// Events
     event CollateralTokenCreated(
         string _tokenName,
@@ -25,10 +26,9 @@ contract TokenFactory is Manager, AccessControl {
     // Constructor
 
     // Public
-    function createTokens(string memory _insurableTokenSymbol)
-        public
-        onlyOwner
-    {
+    function createTokens(string memory _insurableTokenSymbol) public {
+        require(hasRole(Manager.DAO_AGENT_ROLE, _msgSender()));
+
         /// Collateral token
         _createCollateralToken(_insurableTokenSymbol);
 
@@ -43,7 +43,7 @@ contract TokenFactory is Manager, AccessControl {
             _insurableTokenSymbol
         );
 
-        ERC20PresetMinterPauser claimsToken = new ERC20PresetMinterPauser(
+        InsuranceToken claimsToken = new InsuranceToken(
             claimsTokenName,
             "mPAN"
         );
@@ -64,7 +64,7 @@ contract TokenFactory is Manager, AccessControl {
             _insurableTokenSymbol
         );
 
-        ERC20PresetMinterPauser collateralToken = new ERC20PresetMinterPauser(
+        InsuranceToken collateralToken = new InsuranceToken(
             collateralTokenName,
             "cPAN"
         );

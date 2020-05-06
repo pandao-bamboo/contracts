@@ -1,7 +1,9 @@
 pragma solidity 0.6.6;
 
+import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
-contract Storage {
+
+contract Storage is Ownable {
     mapping(bytes32 => uint256) private uIntStorage;
     mapping(bytes32 => string) private stringStorage;
     mapping(bytes32 => address) private addressStorage;
@@ -14,7 +16,7 @@ contract Storage {
                 abi.encodePacked("contract.storage.initialized")
             )] == true
         ) {
-            // make sure only OUR latest contract versions contracts have access to storage
+            // makes sure correct contract versions have access to storage
             require(
                 addressStorage[keccak256(
                     abi.encodePacked("contract.address", msg.sender)
@@ -22,12 +24,6 @@ contract Storage {
             );
         }
         _;
-    }
-
-    /// Constructor
-    constructor() public {
-        // Set the main owner upon deployment
-        boolStorage[keccak256(abi.encodePacked())] = true;
     }
 
     /// Getters

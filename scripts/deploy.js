@@ -19,36 +19,24 @@ async function main() {
 
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
+  // Deploy Eternal Storage
+  const Storage = await ethers.getContractFactory("Storage");
+  const storage = await Storage.deploy();
+  await storage.deployed();
+  await storage.setBool(ethers.utils.keccak256("contract.storage.initialized"), true);
 
   // Deploy Contracts
-  const TokenFactory = await ethers.getContractFactory("TokenFactory");
-  const tokenFactory = await TokenFactory.deploy();
-  await tokenFactory.deployed();
+  const contracts = [];
 
-  console.log("TokenFactory address:", tokenFactory.address);
+  const Manager = await ethers.getContractFactory("Manager");
+  const manager = await Manager.deploy();
+  await manager.deployed();
+  contracts.push(manager);
 
-  // We also save the contract's artifacts and address in the frontend directory
-  // saveFrontendFiles(token);
+  // transfer ownership of contracts to MANAGER
+
+  // add contracts to storage
 }
-
-// function saveFrontendFiles(token) {
-//   const fs = require("fs");
-//   const contractsDir = __dirname + "/../frontend/src/contracts";
-
-//   if (!fs.existsSync(contractsDir)) {
-//     fs.mkdirSync(contractsDir);
-//   }
-
-//   fs.writeFileSync(
-//     contractsDir + "/contract-address.json",
-//     JSON.stringify({ Token: token.address }, undefined, 2)
-//   );
-
-//   fs.copyFileSync(
-//     __dirname + "/../artifacts/Token.json",
-//     contractsDir + "/Token.json"
-//   );
-// }
 
 main()
   .then(() => process.exit(0))

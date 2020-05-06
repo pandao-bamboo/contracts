@@ -1,29 +1,46 @@
-// We require the Buidler Runtime Environment explicitly here. This is optional 
-// but useful for running the script in a standalone fashion through `node <script>`.
-// When running the script with `buidler run <script>` you'll find the Buidler
-// Runtime Environment's members available in the global scope.
-const bre = require("@nomiclabs/buidler");
-
+// This is a script for deploying your contracts. You can adapt it to deploy
+// yours, or create new ones.
 async function main() {
-  // Buidler always runs the compile task when running scripts through it. 
-  // If this runs in a standalone fashion you may want to call compile manually 
-  // to make sure everything is compiled
-  // await bre.run('compile');
+  // This is just a convenience check
+  if (network.name === "buidlerevm") {
+    console.warn(
+      "You are trying to deploy a contract to the Buidler EVM network, which" +
+      "gets automatically created and destroyed every time. Use the Buidler" +
+      " option '--network localhost'"
+    );
+  }
 
-  // We get the contract to deploy
-  const Greeter = await ethers.getContractFactory("Greeter");
-  const greeter = await Greeter.deploy("Hello, Buidler!");
+  // ethers is avaialble in the global scope
+  const [deployer] = await ethers.getSigners();
+  console.log(
+    "Deploying the contracts with the account:",
+    await deployer.getAddress()
+  );
 
-  await greeter.deployed();
+  console.log("Account balance:", (await deployer.getBalance()).toString());
 
-  console.log("Greeter deployed to:", greeter.address);
+  // Deploy Eternal Storage
+  const Storage = await ethers.getContractFactory("Storage");
+  const storage = await Storage.deploy();
+  await storage.deployed();
+  await storage.setBool(ethers.utils.keccak256("contract.storage.initialized"), true);
+
+  // Deploy Contracts
+  const contracts = [];
+
+  const Manager = await ethers.getContractFactory("Manager");
+  const manager = await Manager.deploy();
+  await manager.deployed();
+  contracts.push(manager);
+
+  // transfer ownership of contracts to MANAGER
+
+  // add contracts to storage
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main()
   .then(() => process.exit(0))
-  .catch(error => {
+  .catch((error) => {
     console.error(error);
     process.exit(1);
   });

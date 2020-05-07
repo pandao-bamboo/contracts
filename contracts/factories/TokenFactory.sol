@@ -1,16 +1,15 @@
 pragma solidity 0.6.6;
 
 /// Utilities
-import "../../node_modules/@nomiclabs/buidler/console.sol";
+import "@nomiclabs/buidler/console.sol";
 import "../lib/StringHelper.sol";
 
 /// Imports
-import "../../node_modules/@openzeppelin/contracts/access/AccessControl.sol";
 import "../tokens/InsuranceToken.sol";
 import "../Manager.sol";
 
 
-contract TokenFactory is AccessControl, Manager {
+contract TokenFactory is Manager {
     /// Events
     event CollateralTokenCreated(
         string _tokenName,
@@ -26,9 +25,10 @@ contract TokenFactory is AccessControl, Manager {
     // Constructor
 
     // Public
-    function createTokens(string memory _insurableTokenSymbol) public {
-        require(hasRole(Manager.DAO_AGENT_ROLE, _msgSender()));
-
+    function createTokens(string memory _insurableTokenSymbol)
+        public
+        onlyOwner(address(this))
+    {
         /// Collateral token
         _createCollateralToken(_insurableTokenSymbol);
 

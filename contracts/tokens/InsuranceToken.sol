@@ -1,10 +1,10 @@
 pragma solidity ^0.6.0;
 
-import "../../node_modules/@openzeppelin/contracts/access/AccessControl.sol";
-import "../../node_modules/@openzeppelin/contracts/GSN/Context.sol";
-import "../../node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "../../node_modules/@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
-import "../../node_modules/@openzeppelin/contracts/token/ERC20/ERC20Pausable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/GSN/Context.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20Pausable.sol";
 import "../Manager.sol";
 
 
@@ -38,7 +38,7 @@ contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable, Manager {
      *
      * the caller must have the `DAO_AGENT` role.
      */
-    function mint(address to, uint256 amount) public onlyAgent {
+    function mint(address to, uint256 amount) public onlyOwner(address(this)) {
         _mint(to, amount);
     }
 
@@ -51,7 +51,7 @@ contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable, Manager {
      *
      * - the caller must have the `PAUSER_ROLE`.
      */
-    function pause() public onlyAgent {
+    function pause() public onlyOwner(address(this)) {
         _pause();
     }
 
@@ -64,7 +64,7 @@ contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable, Manager {
      *
      * - the caller must have the `PAUSER_ROLE`.
      */
-    function unpause() public onlyAgent {
+    function unpause() public onlyOwner(address(this)) {
         _unpause();
     }
 

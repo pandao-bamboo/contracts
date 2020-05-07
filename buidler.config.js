@@ -3,7 +3,7 @@ require('dotenv').config();
 usePlugin("@nomiclabs/buidler-waffle");
 usePlugin("@nomiclabs/buidler-ethers");
 usePlugin("@nomiclabs/buidler-etherscan");
-usePlugin("@nomiclabs/buidler-deploy");
+usePlugin("buidler-deploy");
 usePlugin("solidity-coverage");
 
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN || "";
@@ -30,16 +30,13 @@ module.exports = {
     url: "https://api.etherscan.io/api",
     apiKey: ETHERSCAN_API_KEY
   },
-  namedAccounts: {
-    agent: {
-      default: 0,
-      1: 'mainnetAgentAddress',
-      4: 'rinkebyAgentAddress',
-      42: 'kovanAgentAddress'
-    }
-  },
   paths: {
     deploy: 'deploy',
     deployments: 'deployments'
-  }
+  },
+  namedAccounts: {
+    agent: {
+      default: 0
+    },
+  },
 };

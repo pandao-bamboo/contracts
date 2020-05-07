@@ -1,41 +1,41 @@
 pragma solidity 0.6.6;
 
 // Imports
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "./EternalStorage.sol";
+import "@nomiclabs/buidler/console.sol";
 
-import "./interfaces/IStorage.sol";
 
-
-contract Manager is AccessControl {
-    // Storage contract
-    IStorage eternalStorage = IStorage(0);
-
-    /// Roles
-    bytes32 public constant DAO_AGENT_ROLE = keccak256(
-        abi.encodePacked("DAO_AGENT_ROLE")
-    );
-
-    /// Events
-    event agentChanged(
-        address previousAgent,
-        address newAgent
-    );
+contract Manager {
+    // Eternal Storage Contract
+    EternalStorage public eternalStorage;
 
     /// Constructor
     constructor() public {
-        // Setup roles
-        _setupRole(DAO_AGENT_ROLE, _msgSender());
-
         // Save initial DAO Agent to Storage
-        eternalStorage.setAddress(
-            keccak256(abi.encodePacked("dao.agent")),
-            _msgSender()
-        );
+        // eternalStorage.setAddress(
+        //     keccak256(abi.encodePacked("dao.agent")),
+        //     msg.sender
+        // );
     }
 
     /// Modifiers
     modifier onlyAgent() {
-        require(hasRole(DAO_AGENT_ROLE, _msgSender()));
+        require(
+            eternalStorage.getAddress(
+                keccak256(abi.encodePacked("dao.agent"))
+            ) == msg.sender,
+            "PanDAO: UnAuthorized - Agent only"
+        );
+        _;
+    }
+
+    modifier onlyOwner(address _contractAddress) {
+        require(
+            eternalStorage.getAddress(
+                keccak256(abi.encodePacked("contract.owner", _contractAddress))
+            ) == msg.sender,
+            "PanDAO: UnAuthorized - Owner only"
+        );
         _;
     }
 
@@ -54,7 +54,7 @@ contract Manager is AccessControl {
     }
 
     /// Public
-    function changeAgent() public onlyAgent 
+
     /// Internal
 
     /// External

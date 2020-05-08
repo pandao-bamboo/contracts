@@ -7,7 +7,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const { agent } = await getNamedAccounts();
   const nullRecord = "0x0000000000000000000000000000000000000000";
 
-  /// Deployed Contracts
+  // Storage
   const EternalStorage = await deployments.get("EternalStorage");
   const eternalStorage = new ethers.Contract(
     EternalStorage.address,
@@ -16,8 +16,10 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   );
   const { setAddress, getAddress, getBool, setBool } = eternalStorage.functions;
 
+  /// Deployed Contracts
   const Manager = await deployments.get("Manager");
 
+  // Initialize Contracts
   log(`##### PanDAO: Initializing Manager`);
   const daoAgentLocation = storageFormat(["string"], ["dao.agent"]);
   const daoAgent = await getAddress(daoAgentLocation);
@@ -26,7 +28,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   if (daoAgent == nullRecord) {
     await setAddress(daoAgentLocation, agent);
     log(
-      `##### PanDAO: Agent successfully initialized: Location - ${daoAgentLocation} / agent - ${agent}`
+      `##### PanDAO(Storage): Agent Initialized - (Loc:${daoAgentLocation} / agent: ${agent})`
     );
   } else {
     log(`##### PanDAO: Agent already initialized`);
@@ -45,7 +47,13 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     storageFormat(["string", "address"], ["contract.address", Manager.address]),
     Manager.address
   );
+  log(
+    `##### PanDAO(Storage): Manager Initialized - (Manager: ${Manager.address})`
+  );
 
+  // THIS SHOULD ALWAYS BE LAST!!!!!
+  // Once the storage is initialized only the
+  // latest version of a contract in the network can call its functions
   const storageInitialized = await getBool(
     storageFormat(["string"], ["contract.storage.initialized"])
   );

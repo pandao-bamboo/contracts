@@ -10,13 +10,6 @@ contract Manager {
     EternalStorage public eternalStorage;
 
     /// Constructor
-    constructor() public {
-        // Save initial DAO Agent to Storage
-        // eternalStorage.setAddress(
-        //     keccak256(abi.encodePacked("dao.agent")),
-        //     msg.sender
-        // );
-    }
 
     /// Modifiers
     modifier onlyAgent() {

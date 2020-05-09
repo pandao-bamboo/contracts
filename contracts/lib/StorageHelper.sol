@@ -1,7 +1,7 @@
 pragma solidity ^0.6.0;
 
 
-library EternalStorageHelper {
+library StorageHelper {
     // Setter Format
     function formatAddress(string memory _storageLocation, address _value)
         internal

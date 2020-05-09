@@ -1,5 +1,7 @@
 pragma solidity 0.6.6;
 
+import "./lib/StorageHelper.sol";
+
 
 // PanDAO implementation of Eternal Storage(https://fravoll.github.io/solidity-patterns/eternal_storage.html)
 // Influenced by Rocket Pools implementation(https://github.com/rocket-pool/rocketpool/blob/master/contracts/RocketStorage.sol)
@@ -18,8 +20,8 @@ contract EternalStorage {
 
     modifier restrictVersionAccess() {
         if (
-            s.boolStorage[keccak256(
-                abi.encodePacked("contract.storage.initialized")
+            s.boolStorage[StorageHelper.formatGet(
+                "contract.storage.initialized"
             )] == true
         ) {
             // makes sure correct contract versions have access to storage

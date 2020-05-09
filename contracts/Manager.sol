@@ -1,8 +1,10 @@
 pragma solidity 0.6.6;
 
+import "@nomiclabs/buidler/console.sol";
+
 // Imports
 import "./EternalStorage.sol";
-import "@nomiclabs/buidler/console.sol";
+import "./lib/StorageHelper.sol";
 
 
 contract Manager {
@@ -14,9 +16,7 @@ contract Manager {
     /// Modifiers
     modifier onlyAgent() {
         require(
-            eternalStorage.getAddress(
-                keccak256(abi.encodePacked("dao.agent"))
-            ) == msg.sender,
+            eternalStorage.getAddress(formatGet("dao.agent")) == msg.sender,
             "PanDAO: UnAuthorized - Agent only"
         );
         _;
@@ -25,7 +25,7 @@ contract Manager {
     modifier onlyOwner(address _contractAddress) {
         require(
             eternalStorage.getAddress(
-                keccak256(abi.encodePacked("contract.owner", _contractAddress))
+                formatAddress("contract.owner", _contractAddress)
             ) == msg.sender,
             "PanDAO: UnAuthorized - Owner only"
         );
@@ -39,7 +39,7 @@ contract Manager {
         require(
             _contractAddress ==
                 eternalStorage.getAddress(
-                    keccak256(abi.encodePacked("contract.name", _contractName))
+                    formatString("contract.name", _contractName)
                 ),
             "PanDAO: Invalid contract version"
         );

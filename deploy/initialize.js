@@ -45,7 +45,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   );
   await setString(
     storageFormat(["string", "address"], ["contract.address", Manager.address]),
-    "Manager"
+    Manager.address
   );
   log(
     `##### PanDAO(Storage): Manager Initialized - (Manager: ${Manager.address})`

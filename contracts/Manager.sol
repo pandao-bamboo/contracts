@@ -7,7 +7,7 @@ import "@pie-dao/proxy/contracts/PProxyPausable.sol";
 import "./EternalStorage.sol";
 import "./lib/StorageHelper.sol";
 import "./lib/StringHelper.sol";
-import "./factories/InsurancePoolFactory.sol";
+import "./InsurancePool.sol";
 
 
 contract Manager {
@@ -71,6 +71,24 @@ contract Manager {
         uint256 _serviceFeeRate,
         uint256 _termLength
     ) public onlyAgent() {
+        console.log(
+            eternalStorage.getAddress(
+                StorageHelper.formatAddress(
+                    "contract.address",
+                    _insuredTokenAddress
+                )
+            )
+        );
+        require(
+            eternalStorage.getAddress(
+                StorageHelper.formatAddress(
+                    "contract.address",
+                    _insuredTokenAddress
+                )
+            ) == address(0),
+            "PanDAO: Insurance Pool already exists"
+        );
+
         InsurancePool insurancePool = new InsurancePool(
             _insuredTokenAddress,
             _insuredTokenSymbol,
@@ -79,13 +97,18 @@ contract Manager {
             _termLength
         );
 
-        _saveInsurancePool(insurancePool.address, _insuredTokenSymbol);
+        PProxyPausable proxy = new PProxyPausable();
+        proxy.setImplementation(address(insurancePool));
+        proxy.setPauzer(address(this));
+        proxy.setProxyOwner(address(this));
+
+        _saveInsurancePool(address(proxy), _insuredTokenSymbol);
 
         emit InsurancePoolCreated(
             "PanDAO: Insurance Pool Created",
             insurancePool
         );
-        console.log("##### PanDAO: Insurance Pool Create: ", insurancePool.address);
+        console.log("##### PanDAO: Insurance Pool Create: ", proxy);
     }
 
     function pauseInsurancePool() public onlyAgent() {}
@@ -99,19 +122,30 @@ contract Manager {
     /// External
 
     /// Private
-    function _saveInsurancePool(address _insurancePoolAddress, string _insuredTokenSymbol) private {
+    function _saveInsurancePool(
+        address _insurancePoolAddress,
+        string memory _insuredTokenSymbol
+    ) private {
         eternalStorage.setAddress(
-            formatAddress("contract.owner", insurancePool.address),
+            StorageHelper.formatAddress(
+                "contract.owner",
+                _insurancePoolAddress
+            ),
             address(this)
         );
         eternalStorage.setAddress(
-            formatAddress("contract.name", _insuredTokenSymbol),
-            insurancePool.address
+            StorageHelper.formatAddress("contract.name", _insuredTokenSymbol),
+            _insurancePoolAddress
         );
-        eternalStorage.setString(
-            formatAddress("contract.address", insurancePool.address),
-            _insuredTokenSymbol
+        eternalStorage.setAddress(
+            StorageHelper.formatAddress(
+                "contract.address",
+                _insurancePoolAddress
+            ),
+            _insurancePoolAddress
         );
+
         insurancePools.push(_insurancePoolAddress);
         isInsurancePool[_insurancePoolAddress] = true;
-}   
+    }
+}

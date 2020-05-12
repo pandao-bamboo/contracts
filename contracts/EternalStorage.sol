@@ -5,7 +5,7 @@ import "./lib/StorageHelper.sol";
 
 // PanDAO implementation of Eternal Storage(https://fravoll.github.io/solidity-patterns/eternal_storage.html)
 // Influenced by Rocket Pools implementation(https://github.com/rocket-pool/rocketpool/blob/master/contracts/RocketStorage.sol)
-// Storage only controllable by DAO Agent
+// https://pandao.org
 
 contract EternalStorage {
     struct Storage {
@@ -14,6 +14,7 @@ contract EternalStorage {
         mapping(bytes32 => address) addressStorage;
         mapping(bytes32 => bool) boolStorage;
         mapping(bytes32 => int256) intStorage;
+        mapping(bytes32 => bytes) bytesStorage;
     }
 
     Storage internal s;
@@ -26,8 +27,9 @@ contract EternalStorage {
         ) {
             // makes sure correct contract versions have access to storage
             require(
-                s.addressStorage[keccak256(
-                    abi.encodePacked("contract.address", msg.sender)
+                s.addressStorage[StorageHelper.formatAddress(
+                    "contract.address",
+                    msg.sender
                 )] != address(0x0)
             );
         }
@@ -55,6 +57,10 @@ contract EternalStorage {
 
     function getInt(bytes32 _key) external view returns (int256) {
         return s.intStorage[_key];
+    }
+
+    function getBytes(bytes32 _key) external view returns (bytes memory) {
+        return s.bytesStorage[_key];
     }
 
     /// Setters
@@ -90,6 +96,13 @@ contract EternalStorage {
         s.intStorage[_key] = _value;
     }
 
+    function setBytes(bytes32 _key, bytes calldata _value)
+        external
+        restrictVersionAccess
+    {
+        s.bytesStorage[_key] = _value;
+    }
+
     // Delete
     function deleteUint(bytes32 _key) external restrictVersionAccess {
         delete s.uIntStorage[_key];
@@ -109,5 +122,9 @@ contract EternalStorage {
 
     function deleteInt(bytes32 _key) external restrictVersionAccess {
         delete s.intStorage[_key];
+    }
+
+    function deleteBytes(bytes32 _key) external restrictVersionAccess {
+        delete s.bytesStorage[_key];
     }
 }

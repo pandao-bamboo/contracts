@@ -1,6 +1,6 @@
 const ethers = require("ethers");
 const bre = require("@nomiclabs/buidler").ethers;
-const storageFormat = require("../utils/deploymentUtils").storageFormat;
+const storageFormat = require("../utils/deployment").storageFormat;
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
   const { log } = deployments;
@@ -43,9 +43,9 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     storageFormat(["string", "string"], ["contract.name", "Manager"]),
     Manager.address
   );
-  await setAddress(
+  await setString(
     storageFormat(["string", "address"], ["contract.address", Manager.address]),
-    Manager.address
+    "Manager"
   );
   log(
     `##### PanDAO(Storage): Manager Initialized - (Manager: ${Manager.address})`

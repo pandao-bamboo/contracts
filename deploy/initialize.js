@@ -43,7 +43,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     storageFormat(["string", "string"], ["contract.name", "Manager"]),
     Manager.address
   );
-  await setString(
+  await setAddress(
     storageFormat(["string", "address"], ["contract.address", Manager.address]),
     Manager.address
   );

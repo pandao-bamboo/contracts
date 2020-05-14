@@ -10,13 +10,19 @@ import "./lib/StringHelper.sol";
 import "./InsurancePool.sol";
 
 
+/// @author PanDAO - https://pandao.org
+/// @title PanDAO Contract Network Manager
+/// @notice This contract can be used by PanDAO to manage `InsurancePools` and resolve claims
+/// @dev All functionality controlled by Aragon AGENT
 contract Manager {
-    // Eternal Storage Contract
-    EternalStorage public eternalStorage;
     address[] public insurancePools;
-    mapping(address => bool) public isInsurancePool;
+    EternalStorage internal eternalStorage;
 
-    /// Modifiers
+    //////////////////////////////
+    /// @notice Modifiers
+    /////////////////////////////
+
+    /// @dev ensures only Aragon Agent can call functions
     modifier onlyAgent() {
         require(
             eternalStorage.getAddress(StorageHelper.formatGet("dao.agent")) ==
@@ -26,6 +32,7 @@ contract Manager {
         _;
     }
 
+    /// @dev ensures only the owning contract can call functions
     modifier onlyOwner(address _contractAddress) {
         require(
             eternalStorage.getAddress(
@@ -36,6 +43,7 @@ contract Manager {
         _;
     }
 
+    /// @dev ensures that only the latest contract version can call functions
     modifier onlyLatestContract(
         string memory _contractName,
         address _contractAddress
@@ -50,26 +58,37 @@ contract Manager {
         _;
     }
 
-    /// Events
+    //////////////////////////////
+    /// @notice Events
+    /////////////////////////////
+
     event InsurancePoolCreated(
         address indexed insurancePoolAddress,
-        string name,
         string symbol
     );
 
     event InsurancePoolPaused(
         address indexed insurancePoolAddress,
-        string name,
         string symbol
     );
 
-    /// Public
+    //////////////////////////////
+    /// @notice Public Functions
+    /////////////////////////////
+
+    /// @notice Create a new PanDAO Insurance Pool
+    /// @dev This function can only be called by the Aragon Agent
+    /// @param _insuredTokenAddress address of the digital asset we want to insure
+    /// @param _insuredTokenSymbol string token symbol
+    /// @param _insureeFeeRate uint256 fee the insuree pays
+    /// @param _serviceFeeRate uint256 DAO fee
+    /// @param _permiumPeriod uint256 how often premium is pulled from the wallet insuree's wallet
     function createInsurancePool(
         address _insuredTokenAddress,
         string memory _insuredTokenSymbol,
         uint256 _insureeFeeRate,
         uint256 _serviceFeeRate,
-        uint256 _termLength
+        uint256 _premiumPeriod
     ) public onlyAgent() {
         console.log(
             eternalStorage.getAddress(
@@ -94,7 +113,7 @@ contract Manager {
             _insuredTokenSymbol,
             _insureeFeeRate,
             _serviceFeeRate,
-            _termLength
+            _premiumPeriod
         );
 
         PProxyPausable proxy = new PProxyPausable();
@@ -102,13 +121,9 @@ contract Manager {
         proxy.setPauzer(address(this));
         proxy.setProxyOwner(address(this));
 
-        _saveInsurancePool(address(proxy), _insuredTokenSymbol);
+        _saveInsurancePool(address(insurancePool), _insuredTokenSymbol);
 
-        emit InsurancePoolCreated(
-            "PanDAO: Insurance Pool Created",
-            insurancePool
-        );
-        console.log("##### PanDAO: Insurance Pool Create: ", proxy);
+        emit InsurancePoolCreated(address(insurancePool), _insuredTokenSymbol);
     }
 
     function pauseInsurancePool() public onlyAgent() {}
@@ -117,11 +132,15 @@ contract Manager {
 
     function denyInsuranceClaim() public onlyAgent() {}
 
-    /// Internal
+    function updateContractImplementation() public onlyAgent() {}
 
-    /// External
+    //////////////////////////////
+    /// @notice Private Functions
+    /////////////////////////////
 
-    /// Private
+    /// @notice Saves a new insurance pool to Storage
+    /// @param _insurancePoolAddress address the pool that was created
+    /// @param _insuredTokenSymbol string insured token symbol
     function _saveInsurancePool(
         address _insurancePoolAddress,
         string memory _insuredTokenSymbol
@@ -134,7 +153,7 @@ contract Manager {
             address(this)
         );
         eternalStorage.setAddress(
-            StorageHelper.formatAddress("contract.name", _insuredTokenSymbol),
+            StorageHelper.formatString("contract.name", _insuredTokenSymbol),
             _insurancePoolAddress
         );
         eternalStorage.setAddress(
@@ -146,6 +165,5 @@ contract Manager {
         );
 
         insurancePools.push(_insurancePoolAddress);
-        isInsurancePool[_insurancePoolAddress] = true;
     }
 }

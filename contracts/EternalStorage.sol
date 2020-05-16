@@ -1,6 +1,7 @@
 pragma solidity 0.6.6;
 
 import "./lib/StorageHelper.sol";
+import "./InsurancePool.sol";
 
 
 /// @author PanDAO - https://pandao.org
@@ -15,6 +16,7 @@ contract EternalStorage {
         mapping(bytes32 => bool) boolStorage;
         mapping(bytes32 => int256) intStorage;
         mapping(bytes32 => bytes) bytesStorage;
+        mapping(bytes32 => IPool) poolStorage;
     }
 
     Storage internal s;
@@ -97,6 +99,14 @@ contract EternalStorage {
         return s.bytesStorage[_key];
     }
 
+    /// @notice Get stored insurance pool data
+    /// @dev restricted to latest PanDAO Networks contracts
+    /// @param _key bytes32 location should be keccak256 and abi.encodePacked
+    /// @return IPool _value from storage _key location
+    function getPool(bytes32 _key) external view returns (IPool) {
+        return s.poolStorage[_key];
+    }
+
     //////////////////////////////
     /// @notice Setter Functions
     /////////////////////////////
@@ -164,6 +174,17 @@ contract EternalStorage {
         s.bytesStorage[_key] = _value;
     }
 
+    /// @notice Store contract data in bytes format
+    /// @dev restricted to latest PanDAO Networks contracts
+    /// @param _key bytes32 location should be keccak256 and abi.encodePacked
+    /// @param _value bytes value
+    function setPool(bytes32 _key, IPool _value)
+        external
+        restrictVersionAccess
+    {
+        s.poolStorage[_key] = _value;
+    }
+
     //////////////////////////////
     /// @notice Delete Functions
     /////////////////////////////
@@ -208,5 +229,12 @@ contract EternalStorage {
     /// @param _key bytes32 location should be keccak256 and abi.encodePacked
     function deleteBytes(bytes32 _key) external restrictVersionAccess {
         delete s.bytesStorage[_key];
+    }
+
+    /// @notice Delete stored contract data in bytes format
+    /// @dev restricted to latest PanDAO Networks contracts
+    /// @param _key bytes32 location should be keccak256 and abi.encodePacked
+    function deletePool(bytes32 _key) external restrictVersionAccess {
+        delete s.poolStorage[_key];
     }
 }

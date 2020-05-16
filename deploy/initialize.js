@@ -34,7 +34,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     log(`##### PanDAO: Agent already initialized`);
   }
 
-  // Add Management Contract to Storage
+  // Initialize Management Contract to Storage
   await setAddress(
     storageFormat(["string", "address"], ["contract.owner", Manager.address]),
     agent

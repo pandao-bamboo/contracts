@@ -15,14 +15,13 @@ import "./InsurancePool.sol";
 /// @notice This contract can be used by PanDAO to manage `InsurancePools` and resolve claims
 /// @dev All functionality controlled by Aragon AGENT
 contract Manager {
-    address[] public insurancePools;
     EternalStorage internal eternalStorage;
 
     //////////////////////////////
     /// @notice Modifiers
     /////////////////////////////
 
-    /// @dev ensures only Aragon Agent can call functions
+    /// @dev Ensures only Aragon Agent can call functions
     modifier onlyAgent() {
         require(
             eternalStorage.getAddress(StorageHelper.formatGet("dao.agent")) ==
@@ -32,7 +31,7 @@ contract Manager {
         _;
     }
 
-    /// @dev ensures only the owning contract can call functions
+    /// @dev Ensures only the owning contract can call functions
     modifier onlyOwner(address _contractAddress) {
         require(
             eternalStorage.getAddress(
@@ -43,7 +42,7 @@ contract Manager {
         _;
     }
 
-    /// @dev ensures that only the latest contract version can call functions
+    /// @dev Ensures that only the latest contract version can call functions
     modifier onlyLatestContract(
         string memory _contractName,
         address _contractAddress
@@ -82,7 +81,7 @@ contract Manager {
     /// @param _insuredTokenSymbol string token symbol
     /// @param _insureeFeeRate uint256 fee the insuree pays
     /// @param _serviceFeeRate uint256 DAO fee
-    /// @param _permiumPeriod uint256 how often premium is pulled from the wallet insuree's wallet
+    /// @param _premiumPeriod uint256 how often premium is pulled from the wallet insuree's wallet
     function createInsurancePool(
         address _insuredTokenAddress,
         string memory _insuredTokenSymbol,

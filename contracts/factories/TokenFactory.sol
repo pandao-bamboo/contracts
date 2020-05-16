@@ -9,6 +9,9 @@ import "../tokens/InsuranceToken.sol";
 import "../Manager.sol";
 
 
+/// @author PanDAO - https://pandao.org
+/// @title PanDAO Insurance Pool Token Factory
+/// @notice TokenFactory creates ERC20 tokens to represent a persons collateral or claim in the pool
 contract TokenFactory is Manager {
     /// Events
     event CollateralTokenCreated(
@@ -22,22 +25,41 @@ contract TokenFactory is Manager {
         address indexed _tokenAddress
     );
 
-    // Constructor
+    //////////////////////////////
+    /// @notice Public
+    /////////////////////////////
 
-    // Public
+    /// @notice Create a set of Claim and Collateral Tokens for the Pool
+    /// @param _insuredTokenSymbol string Insured token symbol
+    /// @return address[] Returns collateral token in index position 0 and claims token in index position 1
     function createTokens(string memory _insurableTokenSymbol)
         public
         onlyOwner(address(this))
+        returns (address[])
     {
+        address[] tokens;
         /// Collateral token
-        _createCollateralToken(_insurableTokenSymbol);
+        address collateralToken = _createCollateralToken(_insurableTokenSymbol);
+        tokens.push(collateralToken);
 
         /// Claims token
-        _createClaimsToken(_insurableTokenSymbol);
+        address claimsToken = _createClaimsToken(_insurableTokenSymbol);
+        tokens.push(claimsToken);
+
+        return tokens;
     }
 
-    /// Private
-    function _createClaimsToken(string memory _insurableTokenSymbol) private {
+    //////////////////////////////
+    /// @notice Private
+    /////////////////////////////
+
+    /// @notice Create a claim token
+    /// @param _insuredTokenSymbol string Insured token symbol
+    /// @return address Returns newly created claim token address
+    function _createClaimsToken(string memory _insurableTokenSymbol)
+        private
+        returns (address)
+    {
         string memory claimsTokenName = StringHelper.concat(
             "PanDAO Claims Token - ",
             _insurableTokenSymbol
@@ -53,11 +75,17 @@ contract TokenFactory is Manager {
             claimsToken.symbol(),
             address(claimsToken)
         );
+
+        return claimsToken;
         console.log("### Created Claims Token ### - ", claimsToken.name());
     }
 
+    /// @notice Create a collateral token
+    /// @param _insuredTokenSymbol string Insured token symbol
+    /// @return address Returns newly created collateral token address
     function _createCollateralToken(string memory _insurableTokenSymbol)
         private
+        returns (address)
     {
         string memory collateralTokenName = StringHelper.concat(
             "PanDAO Collateral Token - ",
@@ -74,6 +102,8 @@ contract TokenFactory is Manager {
             collateralToken.symbol(),
             address(collateralToken)
         );
+
+        return collateralToken;
         console.log(
             "### Created Collateral Token ### - ",
             collateralToken.name()

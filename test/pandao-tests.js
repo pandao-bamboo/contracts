@@ -139,9 +139,8 @@ describe("PanDAO Contract Network", () => {
         2,
         172800
       );
-
-      expect(
-        await manager.functions.createInsurancePool(
+      const duplicatePool = await expect(
+        manager.functions.createInsurancePool(
           mockToken.address,
           "BTC++",
           5,
@@ -149,7 +148,7 @@ describe("PanDAO Contract Network", () => {
           172800
         )
       ).to.be.revertedWith(
-        "PanDAO: Only insurance pools can create new tokens"
+        "PanDAO: Insurance Pool already exists for that asset"
       );
     });
   });

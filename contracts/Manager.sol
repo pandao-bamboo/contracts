@@ -15,6 +15,8 @@ import "./InsurancePool.sol";
 /// @notice This contract can be used by PanDAO to manage `InsurancePools` and resolve claims
 /// @dev All functionality controlled by Aragon AGENT
 contract Manager {
+    /// @dev Gives access to PanDAO Eternal Storage
+    address public eternalStorageAddress;
     EternalStorage internal eternalStorage;
 
     //////////////////////////////
@@ -42,21 +44,6 @@ contract Manager {
         _;
     }
 
-    /// @dev Ensures that only the latest contract version can call functions
-    modifier onlyLatestContract(
-        string memory _contractName,
-        address _contractAddress
-    ) {
-        require(
-            _contractAddress ==
-                eternalStorage.getAddress(
-                    StorageHelper.formatString("contract.name", _contractName)
-                ),
-            "PanDAO: Invalid contract version"
-        );
-        _;
-    }
-
     //////////////////////////////
     /// @notice Events
     /////////////////////////////
@@ -70,6 +57,11 @@ contract Manager {
         address indexed insurancePoolAddress,
         string symbol
     );
+
+    constructor(address _eternalStorageAddress) public {
+        eternalStorageAddress = _eternalStorageAddress;
+        eternalStorage = EternalStorage(eternalStorageAddress);
+    }
 
     //////////////////////////////
     /// @notice Public Functions
@@ -88,15 +80,7 @@ contract Manager {
         uint256 _insureeFeeRate,
         uint256 _serviceFeeRate,
         uint256 _premiumPeriod
-    ) public onlyAgent() {
-        console.log(
-            eternalStorage.getAddress(
-                StorageHelper.formatAddress(
-                    "contract.address",
-                    _insuredTokenAddress
-                )
-            )
-        );
+    ) public {
         require(
             eternalStorage.getAddress(
                 StorageHelper.formatAddress(
@@ -112,7 +96,8 @@ contract Manager {
             _insuredTokenSymbol,
             _insureeFeeRate,
             _serviceFeeRate,
-            _premiumPeriod
+            _premiumPeriod,
+            eternalStorageAddress
         );
 
         PProxyPausable proxy = new PProxyPausable();
@@ -152,17 +137,18 @@ contract Manager {
             address(this)
         );
         eternalStorage.setAddress(
-            StorageHelper.formatString("contract.name", _insuredTokenSymbol),
+            StorageHelper.formatString(
+                "insurance.pool.name",
+                _insuredTokenSymbol
+            ),
             _insurancePoolAddress
         );
         eternalStorage.setAddress(
             StorageHelper.formatAddress(
-                "contract.address",
+                "insurance.pool.address",
                 _insurancePoolAddress
             ),
             _insurancePoolAddress
         );
-
-        insurancePools.push(_insurancePoolAddress);
     }
 }

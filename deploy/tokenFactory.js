@@ -10,12 +10,11 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     "data",
     "TokenFactory",
     { from: agent },
-    "TokenFactory"
+    "TokenFactory",
+    EternalStorageDeployment.address
   );
 
   if (tokenFactory.newlyDeployed) {
-    tokenFactory.eternalStorage = EternalStorageDeployment.address;
-
     log(
       `##### PanDAO: TokenFactory has been deployed: ${tokenFactory.address}`
     );

@@ -1,4 +1,5 @@
 pragma solidity 0.6.6;
+pragma experimental ABIEncoderV2;
 
 import "./lib/StorageHelper.sol";
 import "./InsurancePool.sol";
@@ -16,7 +17,6 @@ contract EternalStorage {
         mapping(bytes32 => bool) boolStorage;
         mapping(bytes32 => int256) intStorage;
         mapping(bytes32 => bytes) bytesStorage;
-        mapping(bytes32 => IPool) poolStorage;
     }
 
     Storage internal s;
@@ -25,30 +25,11 @@ contract EternalStorage {
     /// @notice Modifiers
     /////////////////////////////
 
-    /// @dev Restricts version access to the latest version of the contract making requests
-    modifier restrictVersionAccess() {
-        if (
-            s.boolStorage[StorageHelper.formatGet(
-                "contract.storage.initialized"
-            )] == true
-        ) {
-            // makes sure correct contract versions have access to storage
-            require(
-                s.addressStorage[StorageHelper.formatAddress(
-                    "contract.address",
-                    msg.sender
-                )] != address(0x0)
-            );
-        }
-        _;
-    }
-
     //////////////////////////////
     /// @notice Getter Functions
     /////////////////////////////
 
     /// @notice Get stored contract data in uint256 format
-    /// @dev restricted to latest PanDAO Networks contracts
     /// @param _key bytes32 location should be keccak256 and abi.encodePacked
     /// @return uint256 _value from storage _key location
     function getUint(bytes32 _key) external view returns (uint256) {
@@ -56,7 +37,6 @@ contract EternalStorage {
     }
 
     /// @notice Get stored contract data in string format
-    /// @dev restricted to latest PanDAO Networks contracts
     /// @param _key bytes32 location should be keccak256 and abi.encodePacked
     /// @return string _value from storage _key location
     function getString(bytes32 _key) external view returns (string memory) {
@@ -66,7 +46,6 @@ contract EternalStorage {
     }
 
     /// @notice Get stored contract data in address format
-    /// @dev restricted to latest PanDAO Networks contracts
     /// @param _key bytes32 location should be keccak256 and abi.encodePacked
     /// @return address _value from storage _key location
     function getAddress(bytes32 _key) external view returns (address) {
@@ -74,7 +53,6 @@ contract EternalStorage {
     }
 
     /// @notice Get stored contract data in bool format
-    /// @dev restricted to latest PanDAO Networks contracts
     /// @param _key bytes32 location should be keccak256 and abi.encodePacked
     /// @return bool _value from storage _key location
     function getBool(bytes32 _key) external view returns (bool) {
@@ -82,7 +60,6 @@ contract EternalStorage {
     }
 
     /// @notice Get stored contract data in int256 format
-    /// @dev restricted to latest PanDAO Networks contracts
     /// @param _key bytes32 location should be keccak256 and abi.encodePacked
     /// @return int256 _value from storage _key location
     function getInt(bytes32 _key) external view returns (int256) {
@@ -90,21 +67,12 @@ contract EternalStorage {
     }
 
     /// @notice Get stored contract data in bytes format
-    /// @dev restricted to latest PanDAO Networks contracts
     /// @param _key bytes32 location should be keccak256 and abi.encodePacked
     /// @return bytes _value from storage _key location
     function getBytes(bytes32 _key) external view returns (bytes memory) {
         require(_key[0] != 0);
 
         return s.bytesStorage[_key];
-    }
-
-    /// @notice Get stored insurance pool data
-    /// @dev restricted to latest PanDAO Networks contracts
-    /// @param _key bytes32 location should be keccak256 and abi.encodePacked
-    /// @return IPool _value from storage _key location
-    function getPool(bytes32 _key) external view returns (IPool) {
-        return s.poolStorage[_key];
     }
 
     //////////////////////////////
@@ -115,10 +83,7 @@ contract EternalStorage {
     /// @dev restricted to latest PanDAO Networks contracts
     /// @param _key bytes32 location should be keccak256 and abi.encodePacked
     /// @param _value uint256 value
-    function setUint(bytes32 _key, uint256 _value)
-        external
-        restrictVersionAccess
-    {
+    function setUint(bytes32 _key, uint256 _value) external {
         s.uIntStorage[_key] = _value;
     }
 
@@ -126,10 +91,7 @@ contract EternalStorage {
     /// @dev restricted to latest PanDAO Networks contracts
     /// @param _key bytes32 location should be keccak256 and abi.encodePacked
     /// @param _value string value
-    function setString(bytes32 _key, string calldata _value)
-        external
-        restrictVersionAccess
-    {
+    function setString(bytes32 _key, string calldata _value) external {
         s.stringStorage[_key] = _value;
     }
 
@@ -137,10 +99,7 @@ contract EternalStorage {
     /// @dev restricted to latest PanDAO Networks contracts
     /// @param _key bytes32 location should be keccak256 and abi.encodePacked
     /// @param _value address value
-    function setAddress(bytes32 _key, address _value)
-        external
-        restrictVersionAccess
-    {
+    function setAddress(bytes32 _key, address _value) external {
         s.addressStorage[_key] = _value;
     }
 
@@ -148,7 +107,7 @@ contract EternalStorage {
     /// @dev restricted to latest PanDAO Networks contracts
     /// @param _key bytes32 location should be keccak256 and abi.encodePacked
     /// @param _value bool value
-    function setBool(bytes32 _key, bool _value) external restrictVersionAccess {
+    function setBool(bytes32 _key, bool _value) external {
         s.boolStorage[_key] = _value;
     }
 
@@ -156,10 +115,7 @@ contract EternalStorage {
     /// @dev restricted to latest PanDAO Networks contracts
     /// @param _key bytes32 location should be keccak256 and abi.encodePacked
     /// @param _value int256 value
-    function setInt(bytes32 _key, int256 _value)
-        external
-        restrictVersionAccess
-    {
+    function setInt(bytes32 _key, int256 _value) external {
         s.intStorage[_key] = _value;
     }
 
@@ -167,22 +123,8 @@ contract EternalStorage {
     /// @dev restricted to latest PanDAO Networks contracts
     /// @param _key bytes32 location should be keccak256 and abi.encodePacked
     /// @param _value bytes value
-    function setBytes(bytes32 _key, bytes calldata _value)
-        external
-        restrictVersionAccess
-    {
+    function setBytes(bytes32 _key, bytes calldata _value) external {
         s.bytesStorage[_key] = _value;
-    }
-
-    /// @notice Store contract data in bytes format
-    /// @dev restricted to latest PanDAO Networks contracts
-    /// @param _key bytes32 location should be keccak256 and abi.encodePacked
-    /// @param _value bytes value
-    function setPool(bytes32 _key, IPool _value)
-        external
-        restrictVersionAccess
-    {
-        s.poolStorage[_key] = _value;
     }
 
     //////////////////////////////
@@ -192,49 +134,42 @@ contract EternalStorage {
     /// @notice Delete stored contract data in bytes format
     /// @dev restricted to latest PanDAO Networks contracts
     /// @param _key bytes32 location should be keccak256 and abi.encodePacked
-    function deleteUint(bytes32 _key) external restrictVersionAccess {
+    function deleteUint(bytes32 _key) external {
         delete s.uIntStorage[_key];
     }
 
     /// @notice Delete stored contract data in string format
     /// @dev restricted to latest PanDAO Networks contracts
     /// @param _key bytes32 location should be keccak256 and abi.encodePacked
-    function deleteString(bytes32 _key) external restrictVersionAccess {
+    function deleteString(bytes32 _key) external {
         delete s.stringStorage[_key];
     }
 
     /// @notice Delete stored contract data in address format
     /// @dev restricted to latest PanDAO Networks contracts
     /// @param _key bytes32 location should be keccak256 and abi.encodePacked
-    function deleteAddress(bytes32 _key) external restrictVersionAccess {
+    function deleteAddress(bytes32 _key) external {
         delete s.addressStorage[_key];
     }
 
     /// @notice Delete stored contract data in bool format
     /// @dev restricted to latest PanDAO Networks contracts
     /// @param _key bytes32 location should be keccak256 and abi.encodePacked
-    function deleteBool(bytes32 _key) external restrictVersionAccess {
+    function deleteBool(bytes32 _key) external {
         delete s.boolStorage[_key];
     }
 
     /// @notice Delete stored contract data in int256 format
     /// @dev restricted to latest PanDAO Networks contracts
     /// @param _key bytes32 location should be keccak256 and abi.encodePacked
-    function deleteInt(bytes32 _key) external restrictVersionAccess {
+    function deleteInt(bytes32 _key) external {
         delete s.intStorage[_key];
     }
 
     /// @notice Delete stored contract data in bytes format
     /// @dev restricted to latest PanDAO Networks contracts
     /// @param _key bytes32 location should be keccak256 and abi.encodePacked
-    function deleteBytes(bytes32 _key) external restrictVersionAccess {
+    function deleteBytes(bytes32 _key) external {
         delete s.bytesStorage[_key];
-    }
-
-    /// @notice Delete stored contract data in bytes format
-    /// @dev restricted to latest PanDAO Networks contracts
-    /// @param _key bytes32 location should be keccak256 and abi.encodePacked
-    function deletePool(bytes32 _key) external restrictVersionAccess {
-        delete s.poolStorage[_key];
     }
 }

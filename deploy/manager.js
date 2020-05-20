@@ -10,12 +10,11 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     "data",
     "Manager",
     { from: agent },
-    "Manager"
+    "Manager",
+    EternalStorageDeployment.address
   );
 
   if (manager.newlyDeployed) {
-    manager.eternalStorage = EternalStorageDeployment.address;
-
     log(`##### PanDAO: Contract Manager has been deployed: ${manager.address}`);
   }
 };

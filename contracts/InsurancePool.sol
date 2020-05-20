@@ -9,54 +9,92 @@ import "./factories/TokenFactory.sol";
 /// @title PanDAO Insurance Pool
 /// @notice PanDAO Insurance Pool is the implementation contract which allows a user to add/remove collateral, claim rewards, and create claims
 contract InsurancePool {
-    struct IPool {
-        address claimsToken;
-        address collateralToken;
-        address insuredToken;
-        string insuredTokenSymbol;
-        uint256 insureeFeeRate; // the rate the buyer payers for insurance
-        uint256 serviceFeeRate; // dao (Note: insureeFeeRate - serviceFeeRate = insurerReward)
-        uint256 premiumPeriod; // (n) Blocks
-    }
-
-    IPool internal iPool;
-
     /// @dev Gives access to PanDAO Eternal Storage
+    address public eternalStorageAddress;
     EternalStorage internal eternalStorage;
 
     /// @notice Stores IPool information on init
-    /// @param _insuredToken the digital asset to be insured
-    /// @param _insuredTokenSymbol the symbol for the digital asset to be insured
+    /// @param _insurableTokenAddress the digital asset to be insured
+    /// @param _insurableTokenSymbol the symbol for the digital asset to be insured
     /// @param _insureeFeeRate The rate the insuree pays
     /// @param _serviceFeeRate The DAO's cut from the insuree premium
     /// @param _premiumPeriod number of blocks between premium payments
+    /// @param _eternalStorageAddress address contract address of eternalStorage
     /// @dev _insureeFeeRate - _serviceFeeRate = insurerFee
     constructor(
-        address _insuredToken,
-        string memory _insuredTokenSymbol,
+        address _insurableTokenAddress,
+        string memory _insurableTokenSymbol,
         uint256 _insureeFeeRate,
         uint256 _serviceFeeRate,
-        uint256 _premiumPeriod
+        uint256 _premiumPeriod,
+        address _eternalStorageAddress
     ) public {
+        eternalStorageAddress = _eternalStorageAddress;
+        eternalStorage = EternalStorage(eternalStorageAddress);
+
         /// @dev Create collateral and claims tokens for pool
-        address[] memory tokens = TokenFactory.createTokens(
-            _insuredTokenSymbol
+        TokenFactory tokenFactory = TokenFactory(
+            eternalStorage.getAddress(
+                StorageHelper.formatString("contract.name", "TokenFactory")
+            )
         );
-        address collateralToken = tokens[0];
-        address claimsToken = tokens[1];
+        console.log("### PanDAO: TEST ###");
+        console.logBytes32(
+            StorageHelper.formatString("contract.name", "TokenFactory")
+        );
+        address[] memory tokens = tokenFactory.createTokens(
+            _insurableTokenSymbol
+        );
 
         /// @dev Saves IPool to EternalStorage
-        iPool.claimsToken = claimsToken;
-        iPool.collateralToken = collateralToken;
-        iPool.insuredToken = _insuredToken;
-        iPool.insuredTokenSymbol = _insuredTokenSymbol;
-        iPool.insureeFeeRate = _insureeFeeRate;
-        iPool.serviceFeeRate = _serviceFeeRate;
-        iPool.premiumPeriod = _premiumPeriod;
-
-        eternalStorage.setPool(
-            StorageHelper.formatAddress("insurance.pool", address(this)),
-            iPool
+        eternalStorage.setAddress(
+            StorageHelper.formatAddress(
+                "insurance.pool.collateralToken",
+                address(this)
+            ),
+            tokens[0]
+        );
+        eternalStorage.setAddress(
+            StorageHelper.formatAddress(
+                "insurance.pool.claimsToken",
+                address(this)
+            ),
+            tokens[1]
+        );
+        eternalStorage.setAddress(
+            StorageHelper.formatAddress(
+                "insurance.pool.insuredToken",
+                address(this)
+            ),
+            _insurableTokenAddress
+        );
+        eternalStorage.setString(
+            StorageHelper.formatAddress(
+                "insurance.pool.insuredTokenSymbol",
+                address(this)
+            ),
+            _insurableTokenSymbol
+        );
+        eternalStorage.setUint(
+            StorageHelper.formatAddress(
+                "insurance.pool.insureeFeeRate",
+                address(this)
+            ),
+            _insureeFeeRate
+        );
+        eternalStorage.setUint(
+            StorageHelper.formatAddress(
+                "insurance.pool.serviceFeeRate",
+                address(this)
+            ),
+            _serviceFeeRate
+        );
+        eternalStorage.setUint(
+            StorageHelper.formatAddress(
+                "insurance.pool.premiumPeriod",
+                address(this)
+            ),
+            _premiumPeriod
         );
     }
 
@@ -73,4 +111,8 @@ contract InsurancePool {
     function createInsuranceClaim() public {}
 
     function removeCollateralFromMatching() public {}
+
+    function getCollateralBalance() public {}
+
+    function getClaimsBalance() public {}
 }

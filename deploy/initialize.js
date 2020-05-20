@@ -18,9 +18,10 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
   /// Deployed Contracts
   const Manager = await deployments.get("Manager");
+  const TokenFactory = await deployments.get("TokenFactory");
 
   // Initialize Contracts
-  log(`##### PanDAO: Initializing Manager`);
+  log(`##### PanDAO: Initializing Contracts`);
   const daoAgentLocation = storageFormat(["string"], ["dao.agent"]);
   const daoAgent = await getAddress(daoAgentLocation);
 
@@ -48,7 +49,30 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     Manager.address
   );
   log(
-    `##### PanDAO(Storage): Manager Initialized - (Manager: ${Manager.address})`
+    `##### PanDAO(Storage): Manager Initialized - (Contract: ${Manager.address})`
+  );
+
+  // Initialize TokenFactory Contract to Storage
+  await setAddress(
+    storageFormat(
+      ["string", "address"],
+      ["contract.owner", TokenFactory.address]
+    ),
+    Manager.address
+  );
+  await setAddress(
+    storageFormat(["string", "string"], ["contract.name", "TokenFactory"]),
+    TokenFactory.address
+  );
+  await setAddress(
+    storageFormat(
+      ["string", "address"],
+      ["contract.address", TokenFactory.address]
+    ),
+    TokenFactory.address
+  );
+  log(
+    `##### PanDAO(Storage): TokenFactory Initialized - (Contract: ${TokenFactory.address})`
   );
 
   // THIS SHOULD ALWAYS BE LAST!!!!!
@@ -68,6 +92,17 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
       ),
       Manager.address
     );
+    await setAddress(
+      storageFormat(["string", "string"], ["contract.name", "Storage"]),
+      EternalStorage.address
+    );
+    await setAddress(
+      storageFormat(
+        ["string", "address"],
+        ["contract.address", EternalStorage.address]
+      ),
+      EternalStorage.address
+    );
     await setBool(
       storageFormat(["string"], ["contract.storage.initialized"]),
       true
@@ -77,5 +112,4 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   }
 };
 
-module.exports.dependencies = ["EternalStorage"];
-module.exports.dependencies = ["Manager"];
+module.exports.dependencies = ["EternalStorage", "Manager", "TokenFactory"];

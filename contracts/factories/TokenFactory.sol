@@ -14,9 +14,6 @@ import "../tokens/InsuranceToken.sol";
 contract TokenFactory {
     /// @dev Gives access to PanDAO Eternal Storage
     address public eternalStorageAddress;
-    EternalStorage internal eternalStorage = EternalStorage(
-        eternalStorageAddress
-    );
 
     /// Events
     event CollateralTokenCreated(
@@ -35,15 +32,14 @@ contract TokenFactory {
     /// @dev Ensures that only active Insurance Pools can create tokens
     modifier onlyPools(address _poolAddress) {
         _;
+        EternalStorage eternalStorage = EternalStorage(eternalStorageAddress);
 
         address insurancePool = eternalStorage.getAddress(
             StorageHelper.formatAddress("insurance.pool.address", _poolAddress)
         );
 
-        console.log("##### PanDAO Insurance Pool: ", insurancePool);
-
         require(
-            insurancePool != address(0x0),
+            insurancePool != address(0),
             "PanDAO: Only insurance pools can create new tokens"
         );
     }
@@ -72,6 +68,8 @@ contract TokenFactory {
         /// Claims token
         address claimsToken = _createClaimsToken(_insurableTokenSymbol);
         tokens.push(address(claimsToken));
+
+        return tokens;
     }
 
     //////////////////////////////

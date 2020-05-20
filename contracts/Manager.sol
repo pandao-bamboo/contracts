@@ -105,8 +105,6 @@ contract Manager {
         proxy.setPauzer(address(this));
         proxy.setProxyOwner(address(this));
 
-        _saveInsurancePool(address(insurancePool), _insuredTokenSymbol);
-
         emit InsurancePoolCreated(address(insurancePool), _insuredTokenSymbol);
     }
 
@@ -117,38 +115,4 @@ contract Manager {
     function denyInsuranceClaim() public onlyAgent() {}
 
     function updateContractImplementation() public onlyAgent() {}
-
-    //////////////////////////////
-    /// @notice Private Functions
-    /////////////////////////////
-
-    /// @notice Saves a new insurance pool to Storage
-    /// @param _insurancePoolAddress address the pool that was created
-    /// @param _insuredTokenSymbol string insured token symbol
-    function _saveInsurancePool(
-        address _insurancePoolAddress,
-        string memory _insuredTokenSymbol
-    ) private {
-        eternalStorage.setAddress(
-            StorageHelper.formatAddress(
-                "contract.owner",
-                _insurancePoolAddress
-            ),
-            address(this)
-        );
-        eternalStorage.setAddress(
-            StorageHelper.formatString(
-                "insurance.pool.name",
-                _insuredTokenSymbol
-            ),
-            _insurancePoolAddress
-        );
-        eternalStorage.setAddress(
-            StorageHelper.formatAddress(
-                "insurance.pool.address",
-                _insurancePoolAddress
-            ),
-            _insurancePoolAddress
-        );
-    }
 }

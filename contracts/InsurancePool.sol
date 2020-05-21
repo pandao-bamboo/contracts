@@ -56,26 +56,18 @@ contract InsurancePool {
             "PanDAO: Insurance Pool already exists for that asset"
         );
 
-        /// @dev initialize contract in EternalStorage
-        eternalStorage.setAddress(
-            StorageHelper.formatAddress("contract.owner", address(this)),
+        bool poolInitialized = StorageHelper.initializeContract(
+            eternalStorage,
+            address(this),
             eternalStorage.getAddress(
                 StorageHelper.formatString("contract.name", "Manager")
-            )
-        );
-        eternalStorage.setAddress(
-            StorageHelper.formatString(
-                "insurance.pool.name",
-                _insurableTokenSymbol
             ),
-            address(this)
+            _insurableTokenSymbol
         );
-        eternalStorage.setAddress(
-            StorageHelper.formatAddress(
-                "insurance.pool.address",
-                address(this)
-            ),
-            address(this)
+
+        require(
+            poolInitialized == true,
+            "PanDAO: Failed to initialized Insurance Pool"
         );
 
         /// @dev Create collateral and claims tokens for pool
@@ -89,54 +81,15 @@ contract InsurancePool {
             _insurableTokenSymbol
         );
 
-        /// @dev Saves IPool to EternalStorage
-        eternalStorage.setAddress(
-            StorageHelper.formatAddress(
-                "insurance.pool.collateralToken",
-                address(this)
-            ),
-            tokens[0]
-        );
-        eternalStorage.setAddress(
-            StorageHelper.formatAddress(
-                "insurance.pool.claimsToken",
-                address(this)
-            ),
-            tokens[1]
-        );
-        eternalStorage.setAddress(
-            StorageHelper.formatAddress(
-                "insurance.pool.insuredToken",
-                _insurableTokenAddress
-            ),
-            _insurableTokenAddress
-        );
-        eternalStorage.setString(
-            StorageHelper.formatAddress(
-                "insurance.pool.insuredTokenSymbol",
-                address(this)
-            ),
-            _insurableTokenSymbol
-        );
-        eternalStorage.setUint(
-            StorageHelper.formatAddress(
-                "insurance.pool.insureeFeeRate",
-                address(this)
-            ),
-            _insureeFeeRate
-        );
-        eternalStorage.setUint(
-            StorageHelper.formatAddress(
-                "insurance.pool.serviceFeeRate",
-                address(this)
-            ),
-            _serviceFeeRate
-        );
-        eternalStorage.setUint(
-            StorageHelper.formatAddress(
-                "insurance.pool.premiumPeriod",
-                address(this)
-            ),
+        StorageHelper.saveInsurancePool(
+            eternalStorage,
+            address(this),
+            tokens[0],
+            tokens[1],
+            _insurableTokenAddress,
+            _insurableTokenSymbol,
+            _insureeFeeRate,
+            _serviceFeeRate,
             _premiumPeriod
         );
 

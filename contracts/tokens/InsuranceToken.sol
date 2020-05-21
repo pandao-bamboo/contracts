@@ -22,11 +22,12 @@ import "../Manager.sol";
  * roles, as well as the default admin role, which will let it grant both minter
  * and pauser roles to aother accounts
  */
-contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable {
-    constructor(string memory name, string memory symbol)
-        public
-        ERC20(name, symbol)
-    {}
+contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable, Manager {
+    constructor(
+        string memory _name,
+        string memory _symbol,
+        address _eternalStorageAddress
+    ) public ERC20(_name, _symbol) Manager(_eternalStorageAddress) {}
 
     /**
      * @dev Creates `amount` new tokens for `to`.
@@ -36,8 +37,8 @@ contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable {
      * Requirements:
      *
      */
-    function mint(address to, uint256 amount) public {
-        _mint(to, amount);
+    function mint(address _to, uint256 _amount) public onlyOwner(msg.sender) {
+        _mint(_to, _amount);
     }
 
     /**
@@ -49,7 +50,7 @@ contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable {
      *
      * - the caller must have the `PAUSER_ROLE`.
      */
-    function pause() public {
+    function pause() public onlyOwner(msg.sender) {
         _pause();
     }
 
@@ -62,15 +63,15 @@ contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable {
      *
      * - the caller must have the `PAUSER_ROLE`.
      */
-    function unpause() public {
+    function unpause() public onlyOwner(msg.sender) {
         _unpause();
     }
 
     // prettier-ignore
-    function _beforeTokenTransfer(address from, address to, uint256 amount)
+    function _beforeTokenTransfer(address _from, address _to, uint256 _amount)
         internal
         override(ERC20, ERC20Pausable)
     {
-        super._beforeTokenTransfer(from, to, amount);
+        super._beforeTokenTransfer(_from, _to, _amount);
     }
 }

@@ -39,7 +39,7 @@ contract Manager {
             eternalStorage.getAddress(
                 StorageHelper.formatAddress("contract.owner", _contractAddress)
             ) == msg.sender,
-            "PanDAO: UnAuthorized - Owner only"
+            "PanDAO: UnAuthorized - Contract owner only"
         );
         _;
     }
@@ -108,7 +108,7 @@ contract Manager {
         emit InsurancePoolCreated(address(insurancePool), _insuredTokenSymbol);
     }
 
-    function pauseInsurancePool() public onlyAgent() {}
+    function pauseNetwork() public onlyAgent() {}
 
     function approveInsuranceClaim() public onlyAgent() {}
 

@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const ethers = require("ethers");
 const bre = require("@nomiclabs/buidler").ethers;
-const { deployments, getNamedAccounts } = require("@nomiclabs/buidler");
+const { deployments } = require("@nomiclabs/buidler");
 
 const storageFormat = require("../utils/deployment").storageFormat;
 
@@ -89,6 +89,28 @@ describe("PanDAO Contract Network", () => {
       expect(
         await eternalStorage.functions.getAddress(
           storageFormat(["string", "string"], ["insurance.pool.name", "BTC++"])
+        )
+      )
+        .to.be.an("string")
+        .that.does.not.include(nullRecord);
+
+      expect(
+        await eternalStorage.functions.getAddress(
+          storageFormat(
+            ["string", "address"],
+            ["insurance.pool.collateralToken", insurancePoolAddress]
+          )
+        )
+      )
+        .to.be.an("string")
+        .that.does.not.include(nullRecord);
+
+      expect(
+        await eternalStorage.functions.getAddress(
+          storageFormat(
+            ["string", "address"],
+            ["insurance.pool.claimsToken", insurancePoolAddress]
+          )
         )
       )
         .to.be.an("string")

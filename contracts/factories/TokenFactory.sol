@@ -90,7 +90,8 @@ contract TokenFactory {
 
         InsuranceToken claimsToken = new InsuranceToken(
             claimsTokenName,
-            "mPAN"
+            "mPAN",
+            eternalStorageAddress
         );
 
         emit ClaimsTokenCreated(
@@ -116,7 +117,8 @@ contract TokenFactory {
 
         InsuranceToken collateralToken = new InsuranceToken(
             collateralTokenName,
-            "cPAN"
+            "cPAN",
+            eternalStorageAddress
         );
 
         emit CollateralTokenCreated(

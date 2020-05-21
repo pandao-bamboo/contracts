@@ -6,10 +6,15 @@ import "../lib/StringHelper.sol";
 
 /// Imports
 import "../tokens/InsuranceToken.sol";
-import "../Manager.sol";
 
 
-contract TokenFactory is Manager {
+/// @author PanDAO - https://pandao.org
+/// @title PanDAO Insurance Pool Token Factory
+/// @notice TokenFactory creates ERC20 tokens to represent a persons collateral or claim in the pool
+contract TokenFactory {
+    /// @dev Gives access to PanDAO Eternal Storage
+    address public eternalStorageAddress;
+
     /// Events
     event CollateralTokenCreated(
         string _tokenName,
@@ -22,22 +27,62 @@ contract TokenFactory is Manager {
         address indexed _tokenAddress
     );
 
-    // Constructor
+    address[] internal tokens;
 
-    // Public
-    function createTokens(string memory _insurableTokenSymbol)
-        public
-        onlyOwner(address(this))
-    {
-        /// Collateral token
-        _createCollateralToken(_insurableTokenSymbol);
+    /// @dev Ensures that only active Insurance Pools can create tokens
+    modifier onlyPools(address _poolAddress) {
+        _;
+        EternalStorage eternalStorage = EternalStorage(eternalStorageAddress);
 
-        /// Claims token
-        _createClaimsToken(_insurableTokenSymbol);
+        address insurancePool = eternalStorage.getAddress(
+            StorageHelper.formatAddress("insurance.pool.address", _poolAddress)
+        );
+
+        require(
+            insurancePool != address(0),
+            "PanDAO: Only insurance pools can create new tokens"
+        );
     }
 
-    /// Private
-    function _createClaimsToken(string memory _insurableTokenSymbol) private {
+    constructor(address _eternalStorageAddress) public {
+        eternalStorageAddress = _eternalStorageAddress;
+    }
+
+    //////////////////////////////
+    /// @notice Public
+    /////////////////////////////
+
+    /// @notice Create a set of Claim and Collateral Tokens for the Pool
+    /// @dev Returns CollateralToken in index position 0 and Claims token in index position 1
+    /// @param _insurableTokenSymbol string Insured token symbol
+    /// @return address[] Array of token addresses.
+    function createTokens(string memory _insurableTokenSymbol)
+        public
+        onlyPools(msg.sender)
+        returns (address[] memory)
+    {
+        /// Collateral token
+        address collateralToken = _createCollateralToken(_insurableTokenSymbol);
+        tokens.push(address(collateralToken));
+
+        /// Claims token
+        address claimsToken = _createClaimsToken(_insurableTokenSymbol);
+        tokens.push(address(claimsToken));
+
+        return tokens;
+    }
+
+    //////////////////////////////
+    /// @notice Private
+    /////////////////////////////
+
+    /// @notice Create a claim token(mPAN)
+    /// @param _insurableTokenSymbol string Insured token symbol
+    /// @return address New token contract address
+    function _createClaimsToken(string memory _insurableTokenSymbol)
+        private
+        returns (address)
+    {
         string memory claimsTokenName = StringHelper.concat(
             "PanDAO Claims Token - ",
             _insurableTokenSymbol
@@ -53,11 +98,16 @@ contract TokenFactory is Manager {
             claimsToken.symbol(),
             address(claimsToken)
         );
-        console.log("### Created Claims Token ### - ", claimsToken.name());
+
+        return address(claimsToken);
     }
 
+    /// @notice Create a collateral token(cPAN)
+    /// @param _insurableTokenSymbol string Insured token symbol
+    /// @return address New token contract address
     function _createCollateralToken(string memory _insurableTokenSymbol)
         private
+        returns (address)
     {
         string memory collateralTokenName = StringHelper.concat(
             "PanDAO Collateral Token - ",
@@ -74,9 +124,7 @@ contract TokenFactory is Manager {
             collateralToken.symbol(),
             address(collateralToken)
         );
-        console.log(
-            "### Created Collateral Token ### - ",
-            collateralToken.name()
-        );
+
+        return address(collateralToken);
     }
 }

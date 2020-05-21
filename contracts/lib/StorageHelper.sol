@@ -8,7 +8,7 @@ library StorageHelper {
         pure
         returns (bytes32)
     {
-        return keccak256(abi.encodePacked(_storageLocation, _value));
+        return keccak256(abi.encode(_storageLocation, _value));
     }
 
     function formatBool(string memory _storageLocation, bool _value)
@@ -16,7 +16,7 @@ library StorageHelper {
         pure
         returns (bytes32)
     {
-        return keccak256(abi.encodePacked(_storageLocation, _value));
+        return keccak256(abi.encode(_storageLocation, _value));
     }
 
     function formatInt(string memory _storageLocation, int256 _value)
@@ -24,7 +24,7 @@ library StorageHelper {
         pure
         returns (bytes32)
     {
-        return keccak256(abi.encodePacked(_storageLocation, _value));
+        return keccak256(abi.encode(_storageLocation, _value));
     }
 
     function formatString(string memory _storageLocation, string memory _value)
@@ -32,7 +32,7 @@ library StorageHelper {
         pure
         returns (bytes32)
     {
-        return keccak256(abi.encodePacked(_storageLocation, _value));
+        return keccak256(abi.encode(_storageLocation, _value));
     }
 
     function formatUint(string memory _storageLocation, uint256 _value)
@@ -40,7 +40,7 @@ library StorageHelper {
         pure
         returns (bytes32)
     {
-        return keccak256(abi.encodePacked(_storageLocation, _value));
+        return keccak256(abi.encode(_storageLocation, _value));
     }
 
     // Getter Format
@@ -49,6 +49,6 @@ library StorageHelper {
         pure
         returns (bytes32)
     {
-        return keccak256(abi.encodePacked(_location));
+        return keccak256(abi.encode(_location));
     }
 }

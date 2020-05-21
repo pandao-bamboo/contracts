@@ -22,11 +22,10 @@ import "../Manager.sol";
  * roles, as well as the default admin role, which will let it grant both minter
  * and pauser roles to aother accounts
  */
-contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable, Manager {
+contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable {
     constructor(string memory name, string memory symbol)
         public
         ERC20(name, symbol)
-        Manager()
     {}
 
     /**
@@ -36,9 +35,8 @@ contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable, Manager {
      *
      * Requirements:
      *
-     * the caller must have the `DAO_AGENT` role.
      */
-    function mint(address to, uint256 amount) public onlyOwner(address(this)) {
+    function mint(address to, uint256 amount) public {
         _mint(to, amount);
     }
 
@@ -51,7 +49,7 @@ contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable, Manager {
      *
      * - the caller must have the `PAUSER_ROLE`.
      */
-    function pause() public onlyOwner(address(this)) {
+    function pause() public {
         _pause();
     }
 
@@ -64,7 +62,7 @@ contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable, Manager {
      *
      * - the caller must have the `PAUSER_ROLE`.
      */
-    function unpause() public onlyOwner(address(this)) {
+    function unpause() public {
         _unpause();
     }
 

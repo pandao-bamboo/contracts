@@ -6,17 +6,20 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const { agent } = await getNamedAccounts();
 
   const EternalStorageDeployment = await deployments.get("EternalStorage");
-  const manager = await deployIfDifferent(
+  const tokenFactory = await deployIfDifferent(
     "data",
-    "Manager",
+    "TokenFactory",
     { from: agent },
-    "Manager",
+    "TokenFactory",
     EternalStorageDeployment.address
   );
 
-  if (manager.newlyDeployed) {
-    log(`##### PanDAO: Contract Manager has been deployed: ${manager.address}`);
+  if (tokenFactory.newlyDeployed) {
+    log(
+      `##### PanDAO: TokenFactory has been deployed: ${tokenFactory.address}`
+    );
   }
 };
-module.exports.tags = ["Manager"];
+module.exports.tags = ["TokenFactory"];
+module.exports.dependencies = ["Manager"];
 module.exports.dependencies = ["EternalStorage"];

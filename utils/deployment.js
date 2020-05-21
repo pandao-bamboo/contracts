@@ -1,5 +1,5 @@
 const ethers = require("ethers");
-const { defaultAbiCoder, keccak256, formatBytes32String } = ethers.utils;
+const { defaultAbiCoder, keccak256 } = ethers.utils;
 
 module.exports = {
   storageFormat: (storageTypes, storageLocation) => {

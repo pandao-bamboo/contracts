@@ -1,4 +1,4 @@
-require('dotenv').config();
+require("dotenv").config();
 
 usePlugin("@nomiclabs/buidler-waffle");
 usePlugin("@nomiclabs/buidler-ethers");
@@ -15,7 +15,7 @@ module.exports = {
     optimizer: {
       runs: 200,
       enabled: true,
-    }
+    },
   },
   networks: {
     buidlerevm: {
@@ -23,20 +23,20 @@ module.exports = {
       blockGasLimit: 100000000,
     },
     coverage: {
-      url: 'http://127.0.0.1:8555' // Coverage launches its own ganache-cli client
-    }
+      url: "http://127.0.0.1:8555", // Coverage launches its own ganache-cli client
+    },
   },
   etherscan: {
     url: "https://api.etherscan.io/api",
-    apiKey: ETHERSCAN_API_KEY
+    apiKey: ETHERSCAN_API_KEY,
   },
   paths: {
-    deploy: 'deploy',
-    deployments: 'deployments'
+    deploy: "deploy",
+    deployments: "deployments",
   },
   namedAccounts: {
     agent: {
-      default: 0
+      default: 0,
     },
   },
 };

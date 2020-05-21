@@ -80,7 +80,7 @@ contract Manager {
         uint256 _insureeFeeRate,
         uint256 _serviceFeeRate,
         uint256 _premiumPeriod
-    ) public {
+    ) public onlyAgent() {
         require(
             eternalStorage.getAddress(
                 StorageHelper.formatAddress(

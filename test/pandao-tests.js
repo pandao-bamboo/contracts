@@ -151,5 +151,23 @@ describe("PanDAO Contract Network", () => {
         "PanDAO: Insurance Pool already exists for that asset"
       );
     });
+
+    it("Fails to create an Insurance Pool if not Agent", async () => {
+      notAgentSigner = new ethers.Contract(
+        Manager.address,
+        Manager.abi,
+        address1
+      );
+
+      await expect(
+        notAgentSigner.functions.createInsurancePool(
+          mockToken.address,
+          "BTC++",
+          5,
+          2,
+          172800
+        )
+      ).to.be.revertedWith("PanDAO: UnAuthorized - Agent only");
+    });
   });
 });

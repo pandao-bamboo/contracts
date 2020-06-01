@@ -56,17 +56,22 @@ contract TokenFactory {
     /// @dev Returns CollateralToken in index position 0 and Claims token in index position 1
     /// @param _insurableTokenSymbol string Insured token symbol
     /// @return address[] Array of token addresses.
-    function createTokens(string memory _insurableTokenSymbol)
-        public
-        onlyPools(msg.sender)
-        returns (address[] memory)
-    {
+    function createTokens(
+        string memory _insurableTokenSymbol,
+        address _insurancePoolAddress
+    ) public onlyPools(msg.sender) returns (address[] memory) {
         /// Collateral token
-        address collateralToken = _createCollateralToken(_insurableTokenSymbol);
+        address collateralToken = _createCollateralToken(
+            _insurableTokenSymbol,
+            _insurancePoolAddress
+        );
         tokens.push(address(collateralToken));
 
         /// Claims token
-        address claimsToken = _createClaimsToken(_insurableTokenSymbol);
+        address claimsToken = _createClaimsToken(
+            _insurableTokenSymbol,
+            _insurancePoolAddress
+        );
         tokens.push(address(claimsToken));
 
         return tokens;
@@ -79,10 +84,10 @@ contract TokenFactory {
     /// @notice Create a claim token(mPAN)
     /// @param _insurableTokenSymbol string Insured token symbol
     /// @return address New token contract address
-    function _createClaimsToken(string memory _insurableTokenSymbol)
-        private
-        returns (address)
-    {
+    function _createClaimsToken(
+        string memory _insurableTokenSymbol,
+        address _insurancePoolAddress
+    ) private returns (address) {
         string memory claimsTokenName = StringHelper.concat(
             "PanDAO Claims Token - ",
             _insurableTokenSymbol
@@ -91,7 +96,8 @@ contract TokenFactory {
         InsuranceToken claimsToken = new InsuranceToken(
             claimsTokenName,
             "mPAN",
-            eternalStorageAddress
+            eternalStorageAddress,
+            _insurancePoolAddress
         );
 
         emit ClaimsTokenCreated(
@@ -106,10 +112,10 @@ contract TokenFactory {
     /// @notice Create a collateral token(cPAN)
     /// @param _insurableTokenSymbol string Insured token symbol
     /// @return address New token contract address
-    function _createCollateralToken(string memory _insurableTokenSymbol)
-        private
-        returns (address)
-    {
+    function _createCollateralToken(
+        string memory _insurableTokenSymbol,
+        address _insurancePoolAddress
+    ) private returns (address) {
         string memory collateralTokenName = StringHelper.concat(
             "PanDAO Collateral Token - ",
             _insurableTokenSymbol
@@ -118,7 +124,8 @@ contract TokenFactory {
         InsuranceToken collateralToken = new InsuranceToken(
             collateralTokenName,
             "cPAN",
-            eternalStorageAddress
+            eternalStorageAddress,
+            _insurancePoolAddress
         );
 
         emit CollateralTokenCreated(

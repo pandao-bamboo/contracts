@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Pausable.sol";
 import "../Manager.sol";
+import "../lib/StorageHelper.sol";
 
 
 /**
@@ -26,8 +27,23 @@ contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable, Manager {
     constructor(
         string memory _name,
         string memory _symbol,
-        address _eternalStorageAddress
-    ) public ERC20(_name, _symbol) Manager(_eternalStorageAddress) {}
+        address _eternalStorageAddress,
+        address _insurancePoolAddress
+    ) public ERC20(_name, _symbol) Manager(_eternalStorageAddress) {
+        eternalStorage.setAddress(
+            StorageHelper.formatAddress("contract.owner", address(this)),
+            _insurancePoolAddress
+        );
+    }
+
+    function approve(
+        address owner,
+        address spender,
+        uint256 amount
+    ) public returns (bool) {
+        _approve(owner, spender, amount);
+        return true;
+    }
 
     /**
      * @dev Creates `amount` new tokens for `to`.
@@ -37,7 +53,14 @@ contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable, Manager {
      * Requirements:
      *
      */
-    function mint(address _to, uint256 _amount) public onlyOwner(msg.sender) {
+    function mint(address _to, uint256 _amount)
+        public
+        onlyOwner(
+            eternalStorage.getAddress(
+                StorageHelper.formatAddress("contract.owner", address(this))
+            )
+        )
+    {
         _mint(_to, _amount);
     }
 
@@ -50,7 +73,14 @@ contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable, Manager {
      *
      * - the caller must have the `PAUSER_ROLE`.
      */
-    function pause() public onlyOwner(msg.sender) {
+    function pause()
+        public
+        onlyOwner(
+            eternalStorage.getAddress(
+                StorageHelper.formatAddress("contract.owner", address(this))
+            )
+        )
+    {
         _pause();
     }
 
@@ -63,7 +93,14 @@ contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable, Manager {
      *
      * - the caller must have the `PAUSER_ROLE`.
      */
-    function unpause() public onlyOwner(msg.sender) {
+    function unpause()
+        public
+        onlyOwner(
+            eternalStorage.getAddress(
+                StorageHelper.formatAddress("contract.owner", address(this))
+            )
+        )
+    {
         _unpause();
     }
 

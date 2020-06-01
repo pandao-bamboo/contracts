@@ -34,11 +34,11 @@ contract Manager {
     }
 
     /// @dev Ensures only the owning contract can call functions
-    modifier onlyOwner(address _contractAddress) {
+    modifier onlyOwner(address _owner) {
         require(
             eternalStorage.getAddress(
-                StorageHelper.formatAddress("contract.owner", _contractAddress)
-            ) == msg.sender,
+                StorageHelper.formatAddress("contract.owner", msg.sender)
+            ) == _owner,
             "PanDAO: UnAuthorized - Contract owner only"
         );
         _;

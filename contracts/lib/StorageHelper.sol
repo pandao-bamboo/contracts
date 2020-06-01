@@ -8,7 +8,7 @@ library StorageHelper {
     /// @param _contractAddress address Contract address to be initialized
     /// @param _contractOwner address Contract/Wallet address of owner(msg.sender)
     /// @param _contractName string Usually the insurableTokenSymbol
-    function initializeContract(
+    function initializeInsurancePool(
         EternalStorage _eternalStorage,
         address _contractAddress,
         address _contractOwner,
@@ -64,6 +64,10 @@ library StorageHelper {
         _eternalStorage.setAddress(
             formatAddress("insurance.pool.claimsToken", _insurancePoolAddress),
             _claimsTokenAddress
+        );
+        _eternalStorage.setAddress(
+            formatAddress("insurance.pool.insuredToken", _insurancePoolAddress),
+            _insuredTokenAddress
         );
         _eternalStorage.setAddress(
             formatAddress("insurance.pool.insuredToken", _insuredTokenAddress),

@@ -4,7 +4,9 @@ import "@nomiclabs/buidler/console.sol";
 
 import "./EternalStorage.sol";
 import "./lib/StorageHelper.sol";
+import "./lib/StringHelper.sol";
 import "./factories/TokenFactory.sol";
+import "./tokens/InsuranceToken.sol";
 
 
 /// @author PanDAO - https://pandao.org
@@ -12,7 +14,6 @@ import "./factories/TokenFactory.sol";
 /// @notice PanDAO Insurance Pool is the implementation contract which allows a user to add/remove collateral, claim rewards, and create claims
 contract InsurancePool {
     /// @dev Gives access to PanDAO Eternal Storage
-    address public eternalStorageAddress;
     EternalStorage internal eternalStorage;
 
     event InsurancePoolCreated(
@@ -40,8 +41,7 @@ contract InsurancePool {
         uint256 _premiumPeriod,
         address _eternalStorageAddress
     ) public {
-        eternalStorageAddress = _eternalStorageAddress;
-        eternalStorage = EternalStorage(eternalStorageAddress);
+        eternalStorage = EternalStorage(_eternalStorageAddress);
 
         address insurableToken = eternalStorage.getAddress(
             StorageHelper.formatAddress(
@@ -56,7 +56,7 @@ contract InsurancePool {
             "PanDAO: Insurance Pool already exists for that asset"
         );
 
-        bool poolInitialized = StorageHelper.initializeContract(
+        bool poolInitialized = StorageHelper.initializeInsurancePool(
             eternalStorage,
             address(this),
             eternalStorage.getAddress(
@@ -78,7 +78,8 @@ contract InsurancePool {
         );
 
         address[] memory tokens = tokenFactory.createTokens(
-            _insurableTokenSymbol
+            _insurableTokenSymbol,
+            address(this)
         );
 
         StorageHelper.saveInsurancePool(
@@ -107,7 +108,42 @@ contract InsurancePool {
     /// @notice Public
     /////////////////////////////
 
-    function addCollateralForMatching() public {}
+    function addCollateralForMatching(address _insurerAddress, uint256 _amount)
+        public
+        payable
+    {
+        address collateralTokenAddress = eternalStorage.getAddress(
+            StorageHelper.formatAddress(
+                "insurance.pool.collateralToken",
+                address(this)
+            )
+        );
+
+        InsuranceToken collateralToken = InsuranceToken(collateralTokenAddress);
+
+        address insuredTokenAddress = eternalStorage.getAddress(
+            StorageHelper.formatAddress(
+                "insurance.pool.insuredToken",
+                address(this)
+            )
+        );
+
+        ERC20 insuredToken = ERC20(insuredTokenAddress);
+
+        insuredToken.transferFrom(_insurerAddress, address(this), _amount);
+
+        /// @dev Mint 1:1 representation of collateral stored in contract
+        collateralToken.mint(_insurerAddress, _amount);
+
+        /// @dev Approve the insurance pool to transfer the collateral representation tokens back
+        collateralToken.approve(_insurerAddress, address(this), _amount);
+
+        eternalStorage.setInsurancePoolQueuePosition(
+            insuredTokenAddress,
+            msg.sender,
+            _amount
+        );
+    }
 
     function buyInsurance() public {}
 

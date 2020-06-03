@@ -3,12 +3,12 @@ const ethers = require("ethers");
 const bre = require("@nomiclabs/buidler").ethers;
 const { deployments } = require("@nomiclabs/buidler");
 const fs = require("fs");
+const InsuranceToken = require("../artifacts/InsuranceToken.json");
 
 const storageFormat = require("../utils/deployment").storageFormat;
 
 describe("PanDAO Contract Network: Insurance Pool Contract", () => {
   let InsurancePool;
-  let insurancePool;
   let ip;
 
   let EternalStorage;
@@ -18,8 +18,6 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
   let mockToken;
 
   let agent;
-  let address1;
-  let address2;
 
   const nullRecord = "0x0000000000000000000000000000000000000000";
 
@@ -76,7 +74,29 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
       mockToken.address
     );
 
+    const collateralTokenAddress = await eternalStorage.functions.getAddress(
+      storageFormat(
+        ["string", "address"],
+        ["insurance.pool.collateralToken", InsurancePool.address]
+      )
+    );
+    const collateralToken = new ethers.Contract(
+      collateralTokenAddress,
+      InsuranceToken.abi,
+      agent
+    );
+
+    // test storage
     expect(positions).to.have.lengthOf(1);
     expect(positions[0].liquidityProviderAddress).to.equal(agent._address);
+    expect(positions[0].amount).to.equal(5);
+
+    // check balances on the tokens themselves to confirm
+    expect(await collateralToken.functions.balanceOf(agent._address)).to.equal(
+      5
+    );
+    expect(await mockToken.functions.balanceOf(InsurancePool.address)).to.equal(
+      5
+    );
   });
 });

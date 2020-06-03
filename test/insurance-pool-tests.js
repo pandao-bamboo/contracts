@@ -71,5 +71,12 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
       agent._address,
       5
     );
+
+    const positions = await eternalStorage.functions.getInsurancePoolQueue(
+      mockToken.address
+    );
+
+    expect(positions).to.have.lengthOf(1);
+    expect(positions[0].liquidityProviderAddress).to.equal(agent._address);
   });
 });

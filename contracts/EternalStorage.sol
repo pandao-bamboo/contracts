@@ -13,7 +13,6 @@ contract EternalStorage {
     struct InsurancePoolQueuePosition {
         address liquidityProviderAddress;
         uint256 amount;
-        bytes32 id;
     }
 
     struct Storage {
@@ -105,6 +104,17 @@ contract EternalStorage {
         }
     }
 
+    function getInsurancePoolQueue(address _insuredTokenAddress)
+        external
+        view
+        returns (InsurancePoolQueuePosition[] memory)
+    {
+        InsurancePoolQueuePosition[] memory insurancePoolQueue = s
+            .insurancePoolQueueStorage[_insuredTokenAddress];
+
+        return insurancePoolQueue;
+    }
+
     //////////////////////////////
     /// @notice Setter Functions
     /////////////////////////////
@@ -168,9 +178,6 @@ contract EternalStorage {
         insurancePoolQueuePosition
             .liquidityProviderAddress = _liquidityProviderAddress;
         insurancePoolQueuePosition.amount = _amount;
-        insurancePoolQueuePosition.id = keccak256(
-            abi.encode(msg.sender, block.number)
-        );
 
         s.insurancePoolQueueStorage[_insuredTokenAddress].push(
             insurancePoolQueuePosition

@@ -140,7 +140,7 @@ contract InsurancePool {
 
         eternalStorage.setInsurancePoolQueuePosition(
             insuredTokenAddress,
-            msg.sender,
+            _insurerAddress,
             _amount
         );
     }

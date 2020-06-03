@@ -58,7 +58,8 @@ contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable, Manager {
         onlyOwner(
             eternalStorage.getAddress(
                 StorageHelper.formatAddress("contract.owner", address(this))
-            )
+            ),
+            address(this)
         )
     {
         _mint(_to, _amount);
@@ -78,7 +79,8 @@ contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable, Manager {
         onlyOwner(
             eternalStorage.getAddress(
                 StorageHelper.formatAddress("contract.owner", address(this))
-            )
+            ),
+            address(this)
         )
     {
         _pause();
@@ -98,7 +100,8 @@ contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable, Manager {
         onlyOwner(
             eternalStorage.getAddress(
                 StorageHelper.formatAddress("contract.owner", address(this))
-            )
+            ),
+            address(this)
         )
     {
         _unpause();

@@ -18,6 +18,7 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
   let mockToken;
 
   let agent;
+  let testAmount = 5;
 
   const nullRecord = "0x0000000000000000000000000000000000000000";
 
@@ -62,13 +63,10 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
     ip = new ethers.Contract(insurancePoolAddress, InsurancePool.abi, agent);
   });
 
-  it("Should deposit X amount of collateral to Insurance Pool contract and receive an equal amount of cPAN Token", async () => {
-    await mockToken.functions.approve(InsurancePool.address, 5);
+  it(`Should deposit ${testAmount} insurable tokens as collateral to Insurance Pool contract and receive an equal amount of cPAN Tokens`, async () => {
+    await mockToken.functions.approve(InsurancePool.address, testAmount);
 
-    depositCollateral = await ip.functions.addCollateralForMatching(
-      agent._address,
-      5
-    );
+    await ip.functions.addCollateralForMatching(agent._address, testAmount);
 
     const positions = await eternalStorage.functions.getInsurancePoolQueue(
       mockToken.address
@@ -89,14 +87,14 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
     // test storage
     expect(positions).to.have.lengthOf(1);
     expect(positions[0].liquidityProviderAddress).to.equal(agent._address);
-    expect(positions[0].amount).to.equal(5);
+    expect(positions[0].amount).to.equal(testAmount);
 
     // check balances on the tokens themselves to confirm
     expect(await collateralToken.functions.balanceOf(agent._address)).to.equal(
-      5
+      testAmount
     );
     expect(await mockToken.functions.balanceOf(InsurancePool.address)).to.equal(
-      5
+      testAmount
     );
   });
 });

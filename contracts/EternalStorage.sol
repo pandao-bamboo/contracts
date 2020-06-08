@@ -84,23 +84,26 @@ contract EternalStorage {
     return s.bytesStorage[_key];
   }
 
-  /// @notice Get stored contract data in int256 format
-  function getInsurancePoolQueuePosition(
+  /// @notice Returns index of InsurancePoolQueuePositions by Liquidity Provider Address
+  /// @param _insuredTokenAddress Address for the token that is insured
+  /// @param _liquidityProviderAddress Address for the liquidity provider
+  /// @return InsurancePoolQueuePosition[] Array of InsurancePoolQueuePosition Structs for the given liquidity provider address
+  function getInsurancePoolQueuePositions(
     address _insuredTokenAddress,
-    address _liquidityProviderAddress,
-    uint256 _amount
-  ) external view returns (InsurancePoolQueuePosition memory) {
+    address _liquidityProviderAddress
+  ) external view returns (InsurancePoolQueuePosition[] memory) {
     InsurancePoolQueuePosition[] memory insurancePoolQueue = s
       .insurancePoolQueueStorage[_insuredTokenAddress];
 
+    InsurancePoolQueuePosition[] memory liquidityProviderPositions;
+
     for (uint256 i = 0; insurancePoolQueue.length <= i; i++) {
-      if (
-        insurancePoolQueue[i].liquidityProviderAddress == _liquidityProviderAddress &&
-        insurancePoolQueue[i].amount == _amount
-      ) {
-        return insurancePoolQueue[i];
+      if (insurancePoolQueue[i].liquidityProviderAddress == _liquidityProviderAddress) {
+        liquidityProviderPositions[liquidityProviderPositions.length] = insurancePoolQueue[i];
       }
     }
+
+    return liquidityProviderPositions;
   }
 
   function getInsurancePoolQueue(address _insuredTokenAddress)

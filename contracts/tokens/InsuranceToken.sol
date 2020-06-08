@@ -40,7 +40,7 @@ contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable, Manager {
     address owner,
     address spender,
     uint256 amount
-  ) public returns (bool) {
+  ) public virtual returns (bool) {
     _approve(owner, spender, amount);
     return true;
   }

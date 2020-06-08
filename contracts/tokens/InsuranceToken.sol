@@ -24,91 +24,85 @@ import "../lib/StorageHelper.sol";
  * and pauser roles to aother accounts
  */
 contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable, Manager {
-    constructor(
-        string memory _name,
-        string memory _symbol,
-        address _eternalStorageAddress,
-        address _insurancePoolAddress
-    ) public ERC20(_name, _symbol) Manager(_eternalStorageAddress) {
-        eternalStorage.setAddress(
-            StorageHelper.formatAddress("contract.owner", address(this)),
-            _insurancePoolAddress
-        );
-    }
+  constructor(
+    string memory _name,
+    string memory _symbol,
+    address _eternalStorageAddress,
+    address _insurancePoolAddress
+  ) public ERC20(_name, _symbol) Manager(_eternalStorageAddress) {
+    eternalStorage.setAddress(
+      StorageHelper.formatAddress("contract.owner", address(this)),
+      _insurancePoolAddress
+    );
+  }
 
-    function approve(
-        address owner,
-        address spender,
-        uint256 amount
-    ) public returns (bool) {
-        _approve(owner, spender, amount);
-        return true;
-    }
+  function approve(
+    address owner,
+    address spender,
+    uint256 amount
+  ) public returns (bool) {
+    _approve(owner, spender, amount);
+    return true;
+  }
 
-    /**
-     * @dev Creates `amount` new tokens for `to`.
-     *
-     * See {ERC20-_mint}.
-     *
-     * Requirements:
-     *
-     */
-    function mint(address _to, uint256 _amount)
-        public
-        onlyOwner(
-            eternalStorage.getAddress(
-                StorageHelper.formatAddress("contract.owner", address(this))
-            ),
-            address(this)
-        )
-    {
-        _mint(_to, _amount);
-    }
+  /**
+   * @dev Creates `amount` new tokens for `to`.
+   *
+   * See {ERC20-_mint}.
+   *
+   * Requirements:
+   *
+   */
+  function mint(address _to, uint256 _amount)
+    public
+    onlyOwner(
+      eternalStorage.getAddress(StorageHelper.formatAddress("contract.owner", address(this))),
+      address(this)
+    )
+  {
+    _mint(_to, _amount);
+  }
 
-    /**
-     * @dev Pauses all token transfers.
-     *
-     * See {ERC20Pausable} and {Pausable-_pause}.
-     *
-     * Requirements:
-     *
-     * - the caller must have the `PAUSER_ROLE`.
-     */
-    function pause()
-        public
-        onlyOwner(
-            eternalStorage.getAddress(
-                StorageHelper.formatAddress("contract.owner", address(this))
-            ),
-            address(this)
-        )
-    {
-        _pause();
-    }
+  /**
+   * @dev Pauses all token transfers.
+   *
+   * See {ERC20Pausable} and {Pausable-_pause}.
+   *
+   * Requirements:
+   *
+   * - the caller must have the `PAUSER_ROLE`.
+   */
+  function pause()
+    public
+    onlyOwner(
+      eternalStorage.getAddress(StorageHelper.formatAddress("contract.owner", address(this))),
+      address(this)
+    )
+  {
+    _pause();
+  }
 
-    /**
-     * @dev Unpauses all token transfers.
-     *
-     * See {ERC20Pausable} and {Pausable-_unpause}.
-     *
-     * Requirements:
-     *
-     * - the caller must have the `PAUSER_ROLE`.
-     */
-    function unpause()
-        public
-        onlyOwner(
-            eternalStorage.getAddress(
-                StorageHelper.formatAddress("contract.owner", address(this))
-            ),
-            address(this)
-        )
-    {
-        _unpause();
-    }
+  /**
+   * @dev Unpauses all token transfers.
+   *
+   * See {ERC20Pausable} and {Pausable-_unpause}.
+   *
+   * Requirements:
+   *
+   * - the caller must have the `PAUSER_ROLE`.
+   */
+  function unpause()
+    public
+    onlyOwner(
+      eternalStorage.getAddress(StorageHelper.formatAddress("contract.owner", address(this))),
+      address(this)
+    )
+  {
+    _unpause();
+  }
 
-    // prettier-ignore
-    function _beforeTokenTransfer(address _from, address _to, uint256 _amount)
+  // prettier-ignore
+  function _beforeTokenTransfer(address _from, address _to, uint256 _amount)
         internal
         override(ERC20, ERC20Pausable)
     {

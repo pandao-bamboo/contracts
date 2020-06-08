@@ -33,11 +33,7 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
     manager = new ethers.Contract(Manager.address, Manager.abi, agent);
 
     EternalStorage = await deployments.get("EternalStorage");
-    eternalStorage = new ethers.Contract(
-      EternalStorage.address,
-      EternalStorage.abi,
-      agent
-    );
+    eternalStorage = new ethers.Contract(EternalStorage.address, EternalStorage.abi, agent);
 
     MockToken = await bre.getContractFactory("Token");
     mockToken = await MockToken.deploy();
@@ -68,9 +64,7 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
 
     await ip.functions.addCollateralForMatching(agent._address, testAmount);
 
-    const positions = await eternalStorage.functions.getInsurancePoolQueue(
-      mockToken.address
-    );
+    const positions = await eternalStorage.functions.getInsurancePoolQueue(mockToken.address);
 
     const collateralTokenAddress = await eternalStorage.functions.getAddress(
       storageFormat(
@@ -78,11 +72,7 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
         ["insurance.pool.collateralToken", InsurancePool.address]
       )
     );
-    const collateralToken = new ethers.Contract(
-      collateralTokenAddress,
-      InsuranceToken.abi,
-      agent
-    );
+    const collateralToken = new ethers.Contract(collateralTokenAddress, InsuranceToken.abi, agent);
 
     // test storage
     expect(positions).to.have.lengthOf(1);
@@ -90,11 +80,7 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
     expect(positions[0].amount).to.equal(testAmount);
 
     // check balances on the tokens themselves to confirm
-    expect(await collateralToken.functions.balanceOf(agent._address)).to.equal(
-      testAmount
-    );
-    expect(await mockToken.functions.balanceOf(InsurancePool.address)).to.equal(
-      testAmount
-    );
+    expect(await collateralToken.functions.balanceOf(agent._address)).to.equal(testAmount);
+    expect(await mockToken.functions.balanceOf(InsurancePool.address)).to.equal(testAmount);
   });
 });

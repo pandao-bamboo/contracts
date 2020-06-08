@@ -15,104 +15,93 @@ import "./InsurancePool.sol";
 /// @notice This contract can be used by PanDAO to manage `InsurancePools` and resolve claims
 /// @dev All functionality controlled by Aragon AGENT
 contract Manager {
-    /// @dev Gives access to PanDAO Eternal Storage
-    address public eternalStorageAddress;
-    EternalStorage internal eternalStorage;
+  /// @dev Gives access to PanDAO Eternal Storage
+  address public eternalStorageAddress;
+  EternalStorage internal eternalStorage;
 
-    //////////////////////////////
-    /// @notice Modifiers
-    /////////////////////////////
+  //////////////////////////////
+  /// @notice Modifiers
+  /////////////////////////////
 
-    /// @dev Ensures only Aragon Agent can call functions
-    modifier onlyAgent() {
-        require(
-            eternalStorage.getAddress(StorageHelper.formatGet("dao.agent")) ==
-                msg.sender,
-            "PanDAO: UnAuthorized - Agent only"
-        );
-        _;
-    }
+  /// @dev Ensures only Aragon Agent can call functions
+  modifier onlyAgent() {
+    require(
+      eternalStorage.getAddress(StorageHelper.formatGet("dao.agent")) == msg.sender,
+      "PanDAO: UnAuthorized - Agent only"
+    );
+    _;
+  }
 
-    /// @dev Ensures only the owning contract can call functions
-    modifier onlyOwner(address _owner, address _contractAddress) {
-        require(
-            eternalStorage.getAddress(
-                StorageHelper.formatAddress("contract.owner", _contractAddress)
-            ) == _owner,
-            "PanDAO: UnAuthorized - Contract owner only"
-        );
-        _;
-    }
+  /// @dev Ensures only the owning contract can call functions
+  modifier onlyOwner(address _owner, address _contractAddress) {
+    require(
+      eternalStorage.getAddress(StorageHelper.formatAddress("contract.owner", _contractAddress)) ==
+        _owner,
+      "PanDAO: UnAuthorized - Contract owner only"
+    );
+    _;
+  }
 
-    //////////////////////////////
-    /// @notice Events
-    /////////////////////////////
+  //////////////////////////////
+  /// @notice Events
+  /////////////////////////////
 
-    event InsurancePoolCreated(
-        address indexed insurancePoolAddress,
-        string symbol
+  event InsurancePoolCreated(address indexed insurancePoolAddress, string symbol);
+
+  event InsurancePoolPaused(address indexed insurancePoolAddress, string symbol);
+
+  constructor(address _eternalStorageAddress) public {
+    eternalStorageAddress = _eternalStorageAddress;
+    eternalStorage = EternalStorage(eternalStorageAddress);
+  }
+
+  //////////////////////////////
+  /// @notice Public Functions
+  /////////////////////////////
+
+  /// @notice Create a new PanDAO Insurance Pool
+  /// @dev This function can only be called by the Aragon Agent
+  /// @param _insuredTokenAddress address of the digital asset we want to insure
+  /// @param _insuredTokenSymbol string token symbol
+  /// @param _insureeFeeRate uint256 fee the insuree pays
+  /// @param _serviceFeeRate uint256 DAO fee
+  /// @param _premiumPeriod uint256 how often premium is pulled from the wallet insuree's wallet
+  function createInsurancePool(
+    address _insuredTokenAddress,
+    string memory _insuredTokenSymbol,
+    uint256 _insureeFeeRate,
+    uint256 _serviceFeeRate,
+    uint256 _premiumPeriod
+  ) public onlyAgent() {
+    require(
+      eternalStorage.getAddress(
+        StorageHelper.formatAddress("contract.address", _insuredTokenAddress)
+      ) == address(0),
+      "PanDAO: Insurance Pool already exists"
     );
 
-    event InsurancePoolPaused(
-        address indexed insurancePoolAddress,
-        string symbol
+    InsurancePool insurancePool = new InsurancePool(
+      _insuredTokenAddress,
+      _insuredTokenSymbol,
+      _insureeFeeRate,
+      _serviceFeeRate,
+      _premiumPeriod,
+      eternalStorageAddress
     );
 
-    constructor(address _eternalStorageAddress) public {
-        eternalStorageAddress = _eternalStorageAddress;
-        eternalStorage = EternalStorage(eternalStorageAddress);
-    }
+    PProxyPausable proxy = new PProxyPausable();
+    proxy.setImplementation(address(insurancePool));
+    proxy.setPauzer(address(this));
+    proxy.setProxyOwner(address(this));
 
-    //////////////////////////////
-    /// @notice Public Functions
-    /////////////////////////////
+    emit InsurancePoolCreated(address(insurancePool), _insuredTokenSymbol);
+  }
 
-    /// @notice Create a new PanDAO Insurance Pool
-    /// @dev This function can only be called by the Aragon Agent
-    /// @param _insuredTokenAddress address of the digital asset we want to insure
-    /// @param _insuredTokenSymbol string token symbol
-    /// @param _insureeFeeRate uint256 fee the insuree pays
-    /// @param _serviceFeeRate uint256 DAO fee
-    /// @param _premiumPeriod uint256 how often premium is pulled from the wallet insuree's wallet
-    function createInsurancePool(
-        address _insuredTokenAddress,
-        string memory _insuredTokenSymbol,
-        uint256 _insureeFeeRate,
-        uint256 _serviceFeeRate,
-        uint256 _premiumPeriod
-    ) public onlyAgent() {
-        require(
-            eternalStorage.getAddress(
-                StorageHelper.formatAddress(
-                    "contract.address",
-                    _insuredTokenAddress
-                )
-            ) == address(0),
-            "PanDAO: Insurance Pool already exists"
-        );
+  function pauseNetwork() public onlyAgent() {}
 
-        InsurancePool insurancePool = new InsurancePool(
-            _insuredTokenAddress,
-            _insuredTokenSymbol,
-            _insureeFeeRate,
-            _serviceFeeRate,
-            _premiumPeriod,
-            eternalStorageAddress
-        );
+  function approveInsuranceClaim() public onlyAgent() {}
 
-        PProxyPausable proxy = new PProxyPausable();
-        proxy.setImplementation(address(insurancePool));
-        proxy.setPauzer(address(this));
-        proxy.setProxyOwner(address(this));
+  function denyInsuranceClaim() public onlyAgent() {}
 
-        emit InsurancePoolCreated(address(insurancePool), _insuredTokenSymbol);
-    }
-
-    function pauseNetwork() public onlyAgent() {}
-
-    function approveInsuranceClaim() public onlyAgent() {}
-
-    function denyInsuranceClaim() public onlyAgent() {}
-
-    function updateContractImplementation() public onlyAgent() {}
+  function updateContractImplementation() public onlyAgent() {}
 }

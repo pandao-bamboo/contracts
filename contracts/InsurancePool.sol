@@ -111,7 +111,7 @@ contract InsurancePool {
     collateralToken.mint(_insurerAddress, _amount);
 
     /// @dev Approve the insurance pool to transfer the collateral representation tokens back
-    collateralToken.approve(_insurerAddress, address(this), _amount);
+    collateralToken.thirdPartyApprove(_insurerAddress, address(this), _amount);
 
     eternalStorage.setInsurancePoolQueuePosition(insuredTokenAddress, _insurerAddress, _amount);
   }
@@ -122,11 +122,23 @@ contract InsurancePool {
 
   function createInsuranceClaim() public {}
 
-  function removeCollateralFromMatching() public {}
+  function getClaimsBalance() public {}
 
   function getCollateralBalance() public {}
 
-  function getClaimsBalance() public {}
+  /// @notice Returns index of InsurancePoolQueuePositions by Liquidity Provider Address
+  /// @param _liquidityProviderAddress Address for the liquidity provider
+  /// @return InsurancePoolQueuePosition[] Array of InsurancePoolQueuePosition Structs for the given liquidity provider address
+  /// @dev This is a wrapper for EternalStorage.getInsurancePoolQueuePositions only network contracts should call Storage functions
+  function getLiquidityProviderPositions(address _liquidityProviderAddress)
+    external
+    view
+    returns (eternalStorage.InsurancePoolQueuePosition[] memory)
+  {
+    return eternalStorage.getInsurancePoolQueuePositions(address(this), _liquidityProviderAddress);
+  }
+
+  function removeCollateralFromMatching() public {}
 
   //////////////////////////////
   /// @notice Private

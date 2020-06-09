@@ -36,11 +36,18 @@ contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable, Manager {
     );
   }
 
-  function approve(
+  function thirdPartyApprove(
     address owner,
     address spender,
     uint256 amount
-  ) public virtual returns (bool) {
+  )
+    public
+    onlyOwner(
+      eternalStorage.getAddress(StorageHelper.formatAddress("contract.owner", address(this))),
+      address(this)
+    )
+    returns (bool)
+  {
     _approve(owner, spender, amount);
     return true;
   }

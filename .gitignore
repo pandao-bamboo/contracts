@@ -8,6 +8,6 @@ cache
 artifacts
 
 #coverage
-.coverage_cache/
-.coverage_contracts/
 coverage
+.coverage_cache
+.coverage_contracts

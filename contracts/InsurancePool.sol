@@ -131,8 +131,7 @@ contract InsurancePool {
   /// @return InsurancePoolQueuePosition[] Array of InsurancePoolQueuePosition Structs for the given liquidity provider address
   /// @dev This is a wrapper for EternalStorage.getInsurancePoolQueuePositions only network contracts should call Storage functions
   function getLiquidityProviderPositions(address _liquidityProviderAddress)
-    external
-    view
+    public
     returns (eternalStorage.InsurancePoolQueuePosition[] memory)
   {
     return eternalStorage.getInsurancePoolQueuePositions(address(this), _liquidityProviderAddress);

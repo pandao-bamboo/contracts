@@ -1,6 +1,5 @@
 pragma solidity 0.6.6;
-
-import "@nomiclabs/buidler/console.sol";
+pragma experimental ABIEncoderV2;
 
 import "./EternalStorage.sol";
 import "./lib/StorageHelper.sol";
@@ -11,31 +10,38 @@ import "./tokens/InsuranceToken.sol";
 
 /// @author PanDAO - https://pandao.org
 /// @title PanDAO Insurance Pool
-/// @notice PanDAO Insurance Pool is the implementation contract which allows a user to add/remove collateral, claim rewards, and create claims
+/// @notice PanDAO Insurance Pool is the implementation contract which allows a user to add/remove liquidity, claim rewards, and create claims
 contract InsurancePool {
   /// @dev Gives access to PanDAO Eternal Storage
   EternalStorage internal eternalStorage;
 
   event InsurancePoolCreated(
     address insurancePoolAddress,
-    address insuredTokenAddress,
-    string insuredTokenSymbol,
+    address insuredAssetAddress,
+    string insuredAssetSymbol,
     uint256 insureeFeeRate,
     uint256 premiumPeriod,
     uint256 serviceFeeRate
   );
 
+  event liquidityAddedToPool(
+    address insurancePoolAddress,
+    address insuredAssetAddress,
+    address liquidityProvider,
+    uint256 amount
+  );
+
   /// @notice Stores IPool information on init
-  /// @param _insurableTokenAddress the digital asset to be insured
-  /// @param _insurableTokenSymbol the symbol for the digital asset to be insured
+  /// @param _insurableAssetAddress the digital asset to be insured
+  /// @param _insurableAssetSymbol the symbol for the digital asset to be insured
   /// @param _insureeFeeRate The rate the insuree pays
   /// @param _serviceFeeRate The DAO's cut from the insuree premium
   /// @param _premiumPeriod number of blocks between premium payments
   /// @param _eternalStorageAddress address contract address of eternalStorage
   /// @dev _insureeFeeRate - _serviceFeeRate = insurerFee
   constructor(
-    address _insurableTokenAddress,
-    string memory _insurableTokenSymbol,
+    address _insurableAssetAddress,
+    string memory _insurableAssetSymbol,
     uint256 _insureeFeeRate,
     uint256 _serviceFeeRate,
     uint256 _premiumPeriod,
@@ -44,7 +50,7 @@ contract InsurancePool {
     eternalStorage = EternalStorage(_eternalStorageAddress);
 
     address insurableToken = eternalStorage.getAddress(
-      StorageHelper.formatAddress("insurance.pool.insuredToken", _insurableTokenAddress)
+      StorageHelper.formatAddress("insurance.pool.insuredAsset", _insurableAssetAddress)
     );
 
     /// @dev Require insurable token to be unique
@@ -54,25 +60,25 @@ contract InsurancePool {
       eternalStorage,
       address(this),
       eternalStorage.getAddress(StorageHelper.formatString("contract.name", "Manager")),
-      _insurableTokenSymbol
+      _insurableAssetSymbol
     );
 
     require(poolInitialized == true, "PanDAO: Failed to initialized Insurance Pool");
 
-    /// @dev Create collateral and claims tokens for pool
+    /// @dev Create liquidity and claims tokens for pool
     TokenFactory tokenFactory = TokenFactory(
       eternalStorage.getAddress(StorageHelper.formatString("contract.name", "TokenFactory"))
     );
 
-    address[] memory tokens = tokenFactory.createTokens(_insurableTokenSymbol, address(this));
+    address[] memory tokens = tokenFactory.createTokens(_insurableAssetSymbol, address(this));
 
     StorageHelper.saveInsurancePool(
       eternalStorage,
       address(this),
       tokens[0],
       tokens[1],
-      _insurableTokenAddress,
-      _insurableTokenSymbol,
+      _insurableAssetAddress,
+      _insurableAssetSymbol,
       _insureeFeeRate,
       _serviceFeeRate,
       _premiumPeriod
@@ -80,8 +86,8 @@ contract InsurancePool {
 
     emit InsurancePoolCreated(
       address(this),
-      _insurableTokenAddress,
-      _insurableTokenSymbol,
+      _insurableAssetAddress,
+      _insurableAssetSymbol,
       _insureeFeeRate,
       _premiumPeriod,
       _serviceFeeRate
@@ -92,28 +98,43 @@ contract InsurancePool {
   /// @notice Public
   /////////////////////////////
 
-  function addCollateralForMatching(address _insurerAddress, uint256 _amount) public payable {
-    address collateralTokenAddress = eternalStorage.getAddress(
-      StorageHelper.formatAddress("insurance.pool.collateralToken", address(this))
+  /// @notice Adds liquidity for matching to the Insurance Pool
+  /// @param _liquidityProviderAddress Address for the liquidity provider
+  /// @param _amount Amount of liquidity to be added to the queue
+  function addLiquidity(address _liquidityProviderAddress, uint256 _amount) public payable {
+    address liquidityTokenAddress = eternalStorage.getAddress(
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
-    InsuranceToken collateralToken = InsuranceToken(collateralTokenAddress);
+    InsuranceToken liquidityToken = InsuranceToken(liquidityTokenAddress);
 
-    address insuredTokenAddress = eternalStorage.getAddress(
-      StorageHelper.formatAddress("insurance.pool.insuredToken", address(this))
+    address insuredAssetAddress = eternalStorage.getAddress(
+      StorageHelper.formatAddress("insurance.pool.insuredAsset", address(this))
     );
 
-    ERC20 insuredToken = ERC20(insuredTokenAddress);
+    ERC20 insuredAsset = ERC20(insuredAssetAddress);
 
-    insuredToken.transferFrom(_insurerAddress, address(this), _amount);
+    insuredAsset.transferFrom(_liquidityProviderAddress, address(this), _amount);
 
-    /// @dev Mint 1:1 representation of collateral stored in contract
-    collateralToken.mint(_insurerAddress, _amount);
+    /// @dev Mint 1:1 representation of liquidity stored in contract
+    liquidityToken.mint(_liquidityProviderAddress, _amount);
 
-    /// @dev Approve the insurance pool to transfer the collateral representation tokens back
-    collateralToken.thirdPartyApprove(_insurerAddress, address(this), _amount);
+    /// @dev Approve the insurance pool to transfer the liquidity representation tokens back
+    liquidityToken.approve(_liquidityProviderAddress, address(this), _amount);
 
-    eternalStorage.setInsurancePoolQueuePosition(insuredTokenAddress, _insurerAddress, _amount);
+    StorageHelper.updateLiquidity(
+      eternalStorage,
+      insuredAssetAddress,
+      _liquidityProviderAddress,
+      _amount
+    );
+
+    emit liquidityAddedToPool(
+      address(this),
+      insuredAssetAddress,
+      _liquidityProviderAddress,
+      _amount
+    );
   }
 
   function buyInsurance() public {}
@@ -124,20 +145,9 @@ contract InsurancePool {
 
   function getClaimsBalance() public {}
 
-  function getCollateralBalance() public {}
+  function getLiquidityBalance() public {}
 
-  /// @notice Returns index of InsurancePoolQueuePositions by Liquidity Provider Address
-  /// @param _liquidityProviderAddress Address for the liquidity provider
-  /// @return InsurancePoolQueuePosition[] Array of InsurancePoolQueuePosition Structs for the given liquidity provider address
-  /// @dev This is a wrapper for EternalStorage.getInsurancePoolQueuePositions only network contracts should call Storage functions
-  function getLiquidityProviderPositions(address _liquidityProviderAddress)
-    public
-    returns (eternalStorage.InsurancePoolQueuePosition[] memory)
-  {
-    return eternalStorage.getInsurancePoolQueuePositions(address(this), _liquidityProviderAddress);
-  }
-
-  function removeCollateralFromMatching() public {}
+  function removeLiquidity() public {}
 
   //////////////////////////////
   /// @notice Private

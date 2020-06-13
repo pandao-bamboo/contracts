@@ -36,7 +36,7 @@ contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable, Manager {
     );
   }
 
-  function thirdPartyApprove(
+  function approve(
     address owner,
     address spender,
     uint256 amount

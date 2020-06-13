@@ -3,7 +3,7 @@ const ethers = require("ethers");
 const bre = require("@nomiclabs/buidler").ethers;
 const { deployments } = require("@nomiclabs/buidler");
 
-const storageFormat = require("../utils/deployment").storageFormat;
+const storageFormat = require("./utils/deployment").storageFormat;
 
 describe("PanDAO Contract Network: Manager Contract", () => {
   let Manager;
@@ -31,11 +31,7 @@ describe("PanDAO Contract Network: Manager Contract", () => {
     manager = new ethers.Contract(Manager.address, Manager.abi, agent);
 
     EternalStorage = await deployments.get("EternalStorage");
-    eternalStorage = new ethers.Contract(
-      EternalStorage.address,
-      EternalStorage.abi,
-      agent
-    );
+    eternalStorage = new ethers.Contract(EternalStorage.address, EternalStorage.abi, agent);
 
     MockToken = await bre.getContractFactory("Token");
     mockToken = await MockToken.deploy();
@@ -45,10 +41,7 @@ describe("PanDAO Contract Network: Manager Contract", () => {
   it("Manager is stored in EternalStorage", async () => {
     expect(
       await eternalStorage.functions.getAddress(
-        storageFormat(
-          ["string", "address"],
-          ["contract.address", Manager.address]
-        )
+        storageFormat(["string", "address"], ["contract.address", Manager.address])
       )
     ).to.equal(Manager.address);
   });
@@ -64,10 +57,7 @@ describe("PanDAO Contract Network: Manager Contract", () => {
   it("Agent owns deployed Manager contract", async () => {
     expect(
       await eternalStorage.functions.getAddress(
-        storageFormat(
-          ["string", "address"],
-          ["contract.owner", Manager.address]
-        )
+        storageFormat(["string", "address"], ["contract.owner", Manager.address])
       )
     ).to.equal(await agent.getAddress());
   });
@@ -97,7 +87,7 @@ describe("PanDAO Contract Network: Manager Contract", () => {
       await eternalStorage.functions.getAddress(
         storageFormat(
           ["string", "address"],
-          ["insurance.pool.collateralToken", insurancePoolAddress]
+          ["insurance.pool.liquidityToken", insurancePoolAddress]
         )
       )
     )
@@ -106,10 +96,7 @@ describe("PanDAO Contract Network: Manager Contract", () => {
 
     expect(
       await eternalStorage.functions.getAddress(
-        storageFormat(
-          ["string", "address"],
-          ["insurance.pool.claimsToken", insurancePoolAddress]
-        )
+        storageFormat(["string", "address"], ["insurance.pool.claimsToken", insurancePoolAddress])
       )
     )
       .to.be.an("string")
@@ -117,10 +104,7 @@ describe("PanDAO Contract Network: Manager Contract", () => {
 
     expect(
       await eternalStorage.functions.getAddress(
-        storageFormat(
-          ["string", "address"],
-          ["insurance.pool.insuredToken", mockToken.address]
-        )
+        storageFormat(["string", "address"], ["insurance.pool.insuredAsset", mockToken.address])
       )
     ).to.equal(mockToken.address);
 
@@ -144,10 +128,7 @@ describe("PanDAO Contract Network: Manager Contract", () => {
 
     expect(
       await eternalStorage.functions.getUint(
-        storageFormat(
-          ["string", "address"],
-          ["insurance.pool.premiumPeriod", insurancePoolAddress]
-        )
+        storageFormat(["string", "address"], ["insurance.pool.premiumPeriod", insurancePoolAddress])
       )
     ).to.equal(172800);
   });
@@ -161,33 +142,15 @@ describe("PanDAO Contract Network: Manager Contract", () => {
       172800
     );
     const duplicatePool = await expect(
-      manager.functions.createInsurancePool(
-        mockToken.address,
-        "BTC++",
-        5,
-        2,
-        172800
-      )
-    ).to.be.revertedWith(
-      "PanDAO: Insurance Pool already exists for that asset"
-    );
+      manager.functions.createInsurancePool(mockToken.address, "BTC++", 5, 2, 172800)
+    ).to.be.revertedWith("PanDAO: Insurance Pool already exists for that asset");
   });
 
   it("Fails to create an Insurance Pool if not Agent", async () => {
-    notAgentSigner = new ethers.Contract(
-      Manager.address,
-      Manager.abi,
-      address1
-    );
+    notAgentSigner = new ethers.Contract(Manager.address, Manager.abi, address1);
 
     await expect(
-      notAgentSigner.functions.createInsurancePool(
-        mockToken.address,
-        "BTC++",
-        5,
-        2,
-        172800
-      )
+      notAgentSigner.functions.createInsurancePool(mockToken.address, "BTC++", 5, 2, 172800)
     ).to.be.revertedWith("PanDAO: UnAuthorized - Agent only");
   });
 });

@@ -61,28 +61,28 @@ contract Manager {
 
   /// @notice Create a new PanDAO Insurance Pool
   /// @dev This function can only be called by the Aragon Agent
-  /// @param _insuredTokenAddress address of the digital asset we want to insure
-  /// @param _insuredTokenSymbol string token symbol
+  /// @param _insuredAssetAddress address of the digital asset we want to insure
+  /// @param _insuredAssetSymbol string token symbol
   /// @param _insureeFeeRate uint256 fee the insuree pays
   /// @param _serviceFeeRate uint256 DAO fee
   /// @param _premiumPeriod uint256 how often premium is pulled from the wallet insuree's wallet
   function createInsurancePool(
-    address _insuredTokenAddress,
-    string memory _insuredTokenSymbol,
+    address _insuredAssetAddress,
+    string memory _insuredAssetSymbol,
     uint256 _insureeFeeRate,
     uint256 _serviceFeeRate,
     uint256 _premiumPeriod
   ) public onlyAgent() {
     require(
       eternalStorage.getAddress(
-        StorageHelper.formatAddress("contract.address", _insuredTokenAddress)
+        StorageHelper.formatAddress("contract.address", _insuredAssetAddress)
       ) == address(0),
       "PanDAO: Insurance Pool already exists"
     );
 
     InsurancePool insurancePool = new InsurancePool(
-      _insuredTokenAddress,
-      _insuredTokenSymbol,
+      _insuredAssetAddress,
+      _insuredAssetSymbol,
       _insureeFeeRate,
       _serviceFeeRate,
       _premiumPeriod,
@@ -94,7 +94,7 @@ contract Manager {
     proxy.setPauzer(address(this));
     proxy.setProxyOwner(address(this));
 
-    emit InsurancePoolCreated(address(insurancePool), _insuredTokenSymbol);
+    emit InsurancePoolCreated(address(insurancePool), _insuredAssetSymbol);
   }
 
   function pauseNetwork() public onlyAgent() {}

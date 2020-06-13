@@ -10,13 +10,13 @@ import "../tokens/InsuranceToken.sol";
 
 /// @author PanDAO - https://pandao.org
 /// @title PanDAO Insurance Pool Token Factory
-/// @notice TokenFactory creates ERC20 tokens to represent a persons collateral or claim in the pool
+/// @notice TokenFactory creates ERC20 tokens to represent a persons liquidity or claim in the pool
 contract TokenFactory {
   /// @dev Gives access to PanDAO Eternal Storage
   address public eternalStorageAddress;
 
   /// Events
-  event CollateralTokenCreated(
+  event LiquidityTokenCreated(
     string _tokenName,
     string _tokenSymbol,
     address indexed _tokenAddress
@@ -45,21 +45,21 @@ contract TokenFactory {
   /// @notice Public
   /////////////////////////////
 
-  /// @notice Create a set of Claim and Collateral Tokens for the Pool
-  /// @dev Returns CollateralToken in index position 0 and Claims token in index position 1
-  /// @param _insurableTokenSymbol string Insured token symbol
+  /// @notice Create a set of Claim and Liquidity Tokens for the Pool
+  /// @dev Returns LiquidityToken in index position 0 and Claims token in index position 1
+  /// @param _insurableAssetSymbol string Insured token symbol
   /// @return address[] Array of token addresses.
-  function createTokens(string memory _insurableTokenSymbol, address _insurancePoolAddress)
+  function createTokens(string memory _insurableAssetSymbol, address _insurancePoolAddress)
     public
     onlyPools(msg.sender)
     returns (address[] memory)
   {
-    /// Collateral token
-    address collateralToken = _createCollateralToken(_insurableTokenSymbol, _insurancePoolAddress);
-    tokens.push(address(collateralToken));
+    /// Liquidity Token
+    address liquidityToken = _createLiquidityToken(_insurableAssetSymbol, _insurancePoolAddress);
+    tokens.push(address(liquidityToken));
 
     /// Claims token
-    address claimsToken = _createClaimsToken(_insurableTokenSymbol, _insurancePoolAddress);
+    address claimsToken = _createClaimsToken(_insurableAssetSymbol, _insurancePoolAddress);
     tokens.push(address(claimsToken));
 
     return tokens;
@@ -70,20 +70,20 @@ contract TokenFactory {
   /////////////////////////////
 
   /// @notice Create a claim token(mPAN)
-  /// @param _insurableTokenSymbol string Insured token symbol
+  /// @param _insurableAssetSymbol string Insured token symbol
   /// @return address New token contract address
-  function _createClaimsToken(string memory _insurableTokenSymbol, address _insurancePoolAddress)
+  function _createClaimsToken(string memory _insurableAssetSymbol, address _insurancePoolAddress)
     private
     returns (address)
   {
     string memory claimsTokenName = StringHelper.concat(
       "PanDAO Claims Token - ",
-      _insurableTokenSymbol
+      _insurableAssetSymbol
     );
 
     InsuranceToken claimsToken = new InsuranceToken(
       claimsTokenName,
-      "mPAN",
+      "CPAN",
       eternalStorageAddress,
       _insurancePoolAddress
     );
@@ -93,31 +93,31 @@ contract TokenFactory {
     return address(claimsToken);
   }
 
-  /// @notice Create a collateral token(cPAN)
-  /// @param _insurableTokenSymbol string Insured token symbol
+  /// @notice Create a Liquidity Token(cPAN)
+  /// @param _insurableAssetSymbol string Insured token symbol
   /// @return address New token contract address
-  function _createCollateralToken(
-    string memory _insurableTokenSymbol,
-    address _insurancePoolAddress
-  ) private returns (address) {
-    string memory collateralTokenName = StringHelper.concat(
-      "PanDAO Collateral Token - ",
-      _insurableTokenSymbol
+  function _createLiquidityToken(string memory _insurableAssetSymbol, address _insurancePoolAddress)
+    private
+    returns (address)
+  {
+    string memory liquidityTokenName = StringHelper.concat(
+      "PanDAO Liquidity Token - ",
+      _insurableAssetSymbol
     );
 
-    InsuranceToken collateralToken = new InsuranceToken(
-      collateralTokenName,
-      "cPAN",
+    InsuranceToken liquidityToken = new InsuranceToken(
+      liquidityTokenName,
+      "LPAN",
       eternalStorageAddress,
       _insurancePoolAddress
     );
 
-    emit CollateralTokenCreated(
-      collateralToken.name(),
-      collateralToken.symbol(),
-      address(collateralToken)
+    emit LiquidityTokenCreated(
+      liquidityToken.name(),
+      liquidityToken.symbol(),
+      address(liquidityToken)
     );
 
-    return address(collateralToken);
+    return address(liquidityToken);
   }
 }

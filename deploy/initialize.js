@@ -1,6 +1,6 @@
 const ethers = require("ethers");
 const bre = require("@nomiclabs/buidler").ethers;
-const storageFormat = require("../utils/deployment").storageFormat;
+const storageFormat = require("../test/utils/deployment").storageFormat;
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
   const { log } = deployments;

@@ -10,11 +10,6 @@ import "./InsurancePool.sol";
 /// @notice This contract is used for storing contract network data
 /// @dev PanDAO network contracts can read/write from this contract
 contract EternalStorage {
-  struct InsurancePoolQueuePosition {
-    address liquidityProviderAddress;
-    uint256 amount;
-  }
-
   struct Storage {
     mapping(bytes32 => uint256) uIntStorage;
     mapping(bytes32 => string) stringStorage;
@@ -22,7 +17,6 @@ contract EternalStorage {
     mapping(bytes32 => bool) boolStorage;
     mapping(bytes32 => int256) intStorage;
     mapping(bytes32 => bytes) bytesStorage;
-    mapping(address => InsurancePoolQueuePosition[]) insurancePoolQueueStorage;
   }
 
   Storage internal s;
@@ -84,39 +78,6 @@ contract EternalStorage {
     return s.bytesStorage[_key];
   }
 
-  /// @notice Returns index of InsurancePoolQueuePositions by Liquidity Provider Address
-  /// @param _insuredTokenAddress Address for the token that is insured
-  /// @param _liquidityProviderAddress Address for the liquidity provider
-  /// @return InsurancePoolQueuePosition[] Array of InsurancePoolQueuePosition Structs for the given liquidity provider address
-  function getInsurancePoolQueuePositions(
-    address _insuredTokenAddress,
-    address _liquidityProviderAddress
-  ) external view returns (InsurancePoolQueuePosition[] memory) {
-    InsurancePoolQueuePosition[] memory insurancePoolQueue = s
-      .insurancePoolQueueStorage[_insuredTokenAddress];
-
-    InsurancePoolQueuePosition[] memory liquidityProviderPositions;
-
-    for (uint256 i = 0; insurancePoolQueue.length <= i; i++) {
-      if (insurancePoolQueue[i].liquidityProviderAddress == _liquidityProviderAddress) {
-        liquidityProviderPositions[liquidityProviderPositions.length] = insurancePoolQueue[i];
-      }
-    }
-
-    return liquidityProviderPositions;
-  }
-
-  function getInsurancePoolQueue(address _insuredTokenAddress)
-    external
-    view
-    returns (InsurancePoolQueuePosition[] memory)
-  {
-    InsurancePoolQueuePosition[] memory insurancePoolQueue = s
-      .insurancePoolQueueStorage[_insuredTokenAddress];
-
-    return insurancePoolQueue;
-  }
-
   //////////////////////////////
   /// @notice Setter Functions
   /////////////////////////////
@@ -169,20 +130,6 @@ contract EternalStorage {
     s.bytesStorage[_key] = _value;
   }
 
-  /// @notice Store contract data in int256 format
-  /// @dev restricted to latest PanDAO Networks contracts
-  function setInsurancePoolQueuePosition(
-    address _insuredTokenAddress,
-    address _liquidityProviderAddress,
-    uint256 _amount
-  ) external {
-    InsurancePoolQueuePosition memory insurancePoolQueuePosition;
-    insurancePoolQueuePosition.liquidityProviderAddress = _liquidityProviderAddress;
-    insurancePoolQueuePosition.amount = _amount;
-
-    s.insurancePoolQueueStorage[_insuredTokenAddress].push(insurancePoolQueuePosition);
-  }
-
   //////////////////////////////
   /// @notice Delete Functions
   /////////////////////////////
@@ -227,23 +174,5 @@ contract EternalStorage {
   /// @param _key bytes32 location should be keccak256 and abi.encodePacked
   function deleteBytes(bytes32 _key) external {
     delete s.bytesStorage[_key];
-  }
-
-  function deletePositionFromInsurancePoolQueue(
-    address _insuredTokenAddress,
-    address _liquidityProviderAddress,
-    uint256 _amount
-  ) external view {
-    InsurancePoolQueuePosition[] memory insurancePoolQueue = s
-      .insurancePoolQueueStorage[_insuredTokenAddress];
-
-    for (uint256 i = 0; insurancePoolQueue.length <= i; i++) {
-      if (
-        insurancePoolQueue[i].liquidityProviderAddress == _liquidityProviderAddress &&
-        insurancePoolQueue[i].amount == _amount
-      ) {
-        delete insurancePoolQueue[i];
-      }
-    }
   }
 }

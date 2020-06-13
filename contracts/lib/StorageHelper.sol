@@ -1,5 +1,7 @@
 pragma solidity ^0.6.0;
 import "../EternalStorage.sol";
+import "./StringHelper.sol";
+import "@nomiclabs/buidler/console.sol";
 
 
 library StorageHelper {
@@ -7,7 +9,7 @@ library StorageHelper {
   /// @param _eternalStorage EternalStorage storage contract instance
   /// @param _contractAddress address Contract address to be initialized
   /// @param _contractOwner address Contract/Wallet address of owner(msg.sender)
-  /// @param _contractName string Usually the insurableTokenSymbol
+  /// @param _contractName string Usually the insurableAssetSymbol
   function initializeInsurancePool(
     EternalStorage _eternalStorage,
     address _contractAddress,
@@ -31,10 +33,10 @@ library StorageHelper {
   /// @notice Saves Insurance Pool Data to EternalStorage
   /// @param _eternalStorage EternalStorage storage contract instance
   /// @param _insurancePoolAddress address Insurance pool address
-  /// @param _collateralTokenAddress address Collateral token address
+  /// @param _liquidityTokenAddress address Liquidity Token address
   /// @param _claimsTokenAddress address Claims token address
-  /// @param _insuredTokenAddress address Insured token address
-  /// @param _insuredTokenSymbol string Token symbol
+  /// @param _insuredAssetAddress address Insured asset address
+  /// @param _insuredAssetSymbol string Token symbol
   /// @param _insureeFeeRate uint256 Rate insurance buyer pays
   /// @param _serviceFeeRate uint256 Rate paid to the DAO
   /// @param _premiumPeriod uint256 Premium period in blocks
@@ -42,34 +44,34 @@ library StorageHelper {
   function saveInsurancePool(
     EternalStorage _eternalStorage,
     address _insurancePoolAddress,
-    address _collateralTokenAddress,
+    address _liquidityTokenAddress,
     address _claimsTokenAddress,
-    address _insuredTokenAddress,
-    string memory _insuredTokenSymbol,
+    address _insuredAssetAddress,
+    string memory _insuredAssetSymbol,
     uint256 _insureeFeeRate,
     uint256 _serviceFeeRate,
     uint256 _premiumPeriod
   ) internal {
     /// @dev Saves IPool to EternalStorage
     _eternalStorage.setAddress(
-      formatAddress("insurance.pool.collateralToken", _insurancePoolAddress),
-      _collateralTokenAddress
+      formatAddress("insurance.pool.liquidityToken", _insurancePoolAddress),
+      _liquidityTokenAddress
     );
     _eternalStorage.setAddress(
       formatAddress("insurance.pool.claimsToken", _insurancePoolAddress),
       _claimsTokenAddress
     );
     _eternalStorage.setAddress(
-      formatAddress("insurance.pool.insuredToken", _insurancePoolAddress),
-      _insuredTokenAddress
+      formatAddress("insurance.pool.insuredAsset", _insurancePoolAddress),
+      _insuredAssetAddress
     );
     _eternalStorage.setAddress(
-      formatAddress("insurance.pool.insuredToken", _insuredTokenAddress),
-      _insuredTokenAddress
+      formatAddress("insurance.pool.insuredAsset", _insuredAssetAddress),
+      _insuredAssetAddress
     );
     _eternalStorage.setString(
-      formatAddress("insurance.pool.insuredTokenSymbol", _insurancePoolAddress),
-      _insuredTokenSymbol
+      formatAddress("insurance.pool.insuredAssetSymbol", _insurancePoolAddress),
+      _insuredAssetSymbol
     );
     _eternalStorage.setUint(
       formatAddress("insurance.pool.insureeFeeRate", _insurancePoolAddress),
@@ -85,7 +87,22 @@ library StorageHelper {
     );
   }
 
-  // Setter Format
+  /// @notice Update the Insurance Pool liquidity and an existing or new liquidity provider adds liquidity
+  function updateLiquidity(
+    EternalStorage _eternalStorage,
+    address _insuredAssetAddress,
+    address _liquidityProviderAddress,
+    uint256 _amount
+  ) internal {
+    // /// @notice Get depositers liquidity providers current balance
+    // /// @notice update the depositers liquidity provider balance
+    console.log(_insuredAssetAddress, _liquidityProviderAddress, _amount);
+    // /// @notice Get current InsurancePool balance
+    // /// @notice update the pool balance
+    _eternalStorage.setUint(formatAddress("insurance.pool.balance", _insuredAssetAddress), 2);
+  }
+
+  /// @notice Format Storage Locations into bytes32
   function formatAddress(string memory _storageLocation, address _value)
     internal
     pure

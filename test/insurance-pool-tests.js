@@ -5,7 +5,7 @@ const { deployments } = require("@nomiclabs/buidler");
 const fs = require("fs");
 const InsuranceToken = require("../artifacts/InsuranceToken.json");
 
-const storageFormat = require("../utils/deployment").storageFormat;
+const storageFormat = require("./utils/deployment").storageFormat;
 
 describe("PanDAO Contract Network: Insurance Pool Contract", () => {
   let InsurancePool;
@@ -59,28 +59,20 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
     ip = new ethers.Contract(insurancePoolAddress, InsurancePool.abi, agent);
   });
 
-  it(`Should deposit ${testAmount} insurable tokens as collateral to Insurance Pool contract and receive an equal amount of cPAN Tokens`, async () => {
+  it(`Should deposit ${testAmount} insurable tokens as liquidity to the Insurance Pool contract and receive an equal amount of LPAN Tokens`, async () => {
     await mockToken.functions.approve(InsurancePool.address, testAmount);
 
-    await ip.functions.addCollateralForMatching(agent._address, testAmount);
+    await ip.functions.addLiquidity(agent._address, testAmount);
 
-    const positions = await eternalStorage.functions.getInsurancePoolQueue(mockToken.address);
-
-    const collateralTokenAddress = await eternalStorage.functions.getAddress(
-      storageFormat(
-        ["string", "address"],
-        ["insurance.pool.collateralToken", InsurancePool.address]
-      )
+    const liquidityTokenAddress = await eternalStorage.functions.getAddress(
+      storageFormat(["string", "address"], ["insurance.pool.liquidityToken", InsurancePool.address])
     );
-    const collateralToken = new ethers.Contract(collateralTokenAddress, InsuranceToken.abi, agent);
+    const liquidityToken = new ethers.Contract(liquidityTokenAddress, InsuranceToken.abi, agent);
 
     // test storage
-    expect(positions).to.have.lengthOf(1);
-    expect(positions[0].liquidityProviderAddress).to.equal(agent._address);
-    expect(positions[0].amount).to.equal(testAmount);
 
     // check balances on the tokens themselves to confirm
-    expect(await collateralToken.functions.balanceOf(agent._address)).to.equal(testAmount);
+    expect(await liquidityToken.functions.balanceOf(agent._address)).to.equal(testAmount);
     expect(await mockToken.functions.balanceOf(InsurancePool.address)).to.equal(testAmount);
   });
 });

@@ -39,17 +39,10 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
     mockToken = await MockToken.deploy();
     await mockToken.deployed();
 
-    insurancePool = await deploy(
-      "InsurancePool",
-      { from: agent._address },
-      "InsurancePool",
-      mockToken.address,
-      "BTC++",
-      5,
-      2,
-      172800,
-      EternalStorage.address
-    );
+    insurancePool = await deploy("InsurancePool", {
+      from: agent._address,
+      args: [mockToken.address, "BTC++", 5, 2, 172800, EternalStorage.address],
+    });
     InsurancePool = await deployments.get("InsurancePool");
 
     const insurancePoolAddress = await eternalStorage.functions.getAddress(

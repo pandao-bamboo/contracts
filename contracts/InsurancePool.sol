@@ -7,7 +7,6 @@ import "./lib/StringHelper.sol";
 import "./factories/TokenFactory.sol";
 import "./tokens/InsuranceToken.sol";
 
-
 /// @author PanDAO - https://pandao.org
 /// @title PanDAO Insurance Pool
 /// @notice PanDAO Insurance Pool is the implementation contract which allows a user to add/remove liquidity, claim rewards, and create claims
@@ -60,7 +59,8 @@ contract InsurancePool {
       eternalStorage,
       address(this),
       eternalStorage.getAddress(StorageHelper.formatString("contract.name", "Manager")),
-      _insurableAssetSymbol
+      _insurableAssetSymbol,
+      _insurableAssetAddress
     );
 
     require(poolInitialized == true, "PanDAO: Failed to initialized Insurance Pool");
@@ -70,7 +70,11 @@ contract InsurancePool {
       eternalStorage.getAddress(StorageHelper.formatString("contract.name", "TokenFactory"))
     );
 
-    address[] memory tokens = tokenFactory.createTokens(_insurableAssetSymbol, address(this));
+    address[] memory tokens = tokenFactory.createTokens(
+      _insurableAssetSymbol,
+      _insurableAssetAddress,
+      address(this)
+    );
 
     StorageHelper.saveInsurancePool(
       eternalStorage,
@@ -101,18 +105,18 @@ contract InsurancePool {
   /// @notice Adds liquidity for matching to the Insurance Pool
   /// @param _liquidityProviderAddress Address for the liquidity provider
   /// @param _amount Amount of liquidity to be added to the queue
-  function addLiquidity(address _liquidityProviderAddress, uint256 _amount) public payable {
+  function addLiquidity(
+    address _insuredAssetAddress,
+    address _liquidityProviderAddress,
+    uint256 _amount
+  ) public payable {
     address liquidityTokenAddress = eternalStorage.getAddress(
-      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", _insuredAssetAddress)
     );
 
     InsuranceToken liquidityToken = InsuranceToken(liquidityTokenAddress);
 
-    address insuredAssetAddress = eternalStorage.getAddress(
-      StorageHelper.formatAddress("insurance.pool.insuredAsset", address(this))
-    );
-
-    ERC20 insuredAsset = ERC20(insuredAssetAddress);
+    ERC20 insuredAsset = ERC20(_insuredAssetAddress);
 
     insuredAsset.transferFrom(_liquidityProviderAddress, address(this), _amount);
 
@@ -124,14 +128,14 @@ contract InsurancePool {
 
     StorageHelper.updateLiquidity(
       eternalStorage,
-      insuredAssetAddress,
+      _insuredAssetAddress,
       _liquidityProviderAddress,
       _amount
     );
 
     emit liquidityAddedToPool(
       address(this),
-      insuredAssetAddress,
+      _insuredAssetAddress,
       _liquidityProviderAddress,
       _amount
     );

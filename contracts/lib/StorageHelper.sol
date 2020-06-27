@@ -3,27 +3,37 @@ import "../EternalStorage.sol";
 import "./StringHelper.sol";
 import "@nomiclabs/buidler/console.sol";
 
-
 library StorageHelper {
   /// @notice Initialized a new contract in EternalStorage
   /// @param _eternalStorage EternalStorage storage contract instance
   /// @param _contractAddress address Contract address to be initialized
-  /// @param _contractOwner address Contract/Wallet address of owner(msg.sender)
+  /// @param _contractOwnerAddress address Contract/Wallet address of owner(msg.sender)
   /// @param _contractName string Usually the insurableAssetSymbol
   function initializeInsurancePool(
     EternalStorage _eternalStorage,
     address _contractAddress,
-    address _contractOwner,
-    string memory _contractName
+    address _contractOwnerAddress,
+    string memory _contractName,
+    address _insuredAssetAddress
   ) internal returns (bool) {
     /// @dev initialize contract in EternalStorage
-    _eternalStorage.setAddress(formatAddress("contract.owner", _contractAddress), _contractOwner);
     _eternalStorage.setAddress(
-      formatString("insurance.pool.name", _contractName),
+      formatAddress("contract.owner", _contractAddress),
+      _contractOwnerAddress
+    );
+    _eternalStorage.setAddress(formatString("contract.name", _contractName), _contractAddress);
+    _eternalStorage.setAddress(
+      formatAddress("contract.address", _contractAddress),
       _contractAddress
     );
+
+    /// @dev Initialize insurance pool Pool in EternalStorage
+    _eternalStorage.setString(
+      formatAddress("insurance.pool.name", _insuredAssetAddress),
+      _contractName
+    );
     _eternalStorage.setAddress(
-      formatAddress("insurance.pool.address", _contractAddress),
+      formatAddress("insurance.pool.address", _insuredAssetAddress),
       _contractAddress
     );
 
@@ -54,35 +64,35 @@ library StorageHelper {
   ) internal {
     /// @dev Saves IPool to EternalStorage
     _eternalStorage.setAddress(
-      formatAddress("insurance.pool.liquidityToken", _insurancePoolAddress),
+      formatAddress("insurance.pool.liquidityToken", _insuredAssetAddress),
       _liquidityTokenAddress
     );
     _eternalStorage.setAddress(
-      formatAddress("insurance.pool.claimsToken", _insurancePoolAddress),
+      formatAddress("insurance.pool.claimsToken", _insuredAssetAddress),
       _claimsTokenAddress
     );
     _eternalStorage.setAddress(
-      formatAddress("insurance.pool.insuredAsset", _insurancePoolAddress),
-      _insuredAssetAddress
+      formatAddress("insurance.pool.address", _insuredAssetAddress),
+      _insurancePoolAddress
     );
     _eternalStorage.setAddress(
       formatAddress("insurance.pool.insuredAsset", _insuredAssetAddress),
       _insuredAssetAddress
     );
     _eternalStorage.setString(
-      formatAddress("insurance.pool.insuredAssetSymbol", _insurancePoolAddress),
+      formatAddress("insurance.pool.insuredAssetSymbol", _insuredAssetAddress),
       _insuredAssetSymbol
     );
     _eternalStorage.setUint(
-      formatAddress("insurance.pool.insureeFeeRate", _insurancePoolAddress),
+      formatAddress("insurance.pool.insureeFeeRate", _insuredAssetAddress),
       _insureeFeeRate
     );
     _eternalStorage.setUint(
-      formatAddress("insurance.pool.serviceFeeRate", _insurancePoolAddress),
+      formatAddress("insurance.pool.serviceFeeRate", _insuredAssetAddress),
       _serviceFeeRate
     );
     _eternalStorage.setUint(
-      formatAddress("insurance.pool.premiumPeriod", _insurancePoolAddress),
+      formatAddress("insurance.pool.premiumPeriod", _insuredAssetAddress),
       _premiumPeriod
     );
   }
@@ -96,10 +106,16 @@ library StorageHelper {
   ) internal {
     // /// @notice Get depositers liquidity providers current balance
     // /// @notice update the depositers liquidity provider balance
-    console.log(_insuredAssetAddress, _liquidityProviderAddress, _amount);
     // /// @notice Get current InsurancePool balance
     // /// @notice update the pool balance
-    _eternalStorage.setUint(formatAddress("insurance.pool.balance", _insuredAssetAddress), 2);
+    uint256 balance = _eternalStorage.getUint(
+      formatAddress("insurance.pool.balance", _insuredAssetAddress)
+    );
+
+    // _eternalStorage.setUint(
+    //   formatAddress("insurance.pool.balance", _insuredAssetAddress),
+    //   _amount + balance
+    // );
   }
 
   /// @notice Format Storage Locations into bytes32

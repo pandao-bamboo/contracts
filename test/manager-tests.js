@@ -71,13 +71,19 @@ describe("PanDAO Contract Network: Manager Contract", () => {
       172800
     );
     const insurancePoolAddress = await eternalStorage.functions.getAddress(
-      storageFormat(["string", "string"], ["insurance.pool.name", "BTC++"])
+      storageFormat(["string", "address"], ["insurance.pool.address", mockToken.address])
     );
 
     expect(ip).to.have.property("hash");
     expect(
       await eternalStorage.functions.getAddress(
-        storageFormat(["string", "string"], ["insurance.pool.name", "BTC++"])
+        storageFormat(["string", "address"], ["insurance.pool.address", mockToken.address])
+      )
+    ).to.equal(insurancePoolAddress);
+
+    expect(
+      await eternalStorage.functions.getAddress(
+        storageFormat(["string", "address"], ["insurance.pool.liquidityToken", mockToken.address])
       )
     )
       .to.be.an("string")
@@ -85,18 +91,7 @@ describe("PanDAO Contract Network: Manager Contract", () => {
 
     expect(
       await eternalStorage.functions.getAddress(
-        storageFormat(
-          ["string", "address"],
-          ["insurance.pool.liquidityToken", insurancePoolAddress]
-        )
-      )
-    )
-      .to.be.an("string")
-      .that.does.not.include(nullRecord);
-
-    expect(
-      await eternalStorage.functions.getAddress(
-        storageFormat(["string", "address"], ["insurance.pool.claimsToken", insurancePoolAddress])
+        storageFormat(["string", "address"], ["insurance.pool.claimsToken", mockToken.address])
       )
     )
       .to.be.an("string")
@@ -110,25 +105,19 @@ describe("PanDAO Contract Network: Manager Contract", () => {
 
     expect(
       await eternalStorage.functions.getUint(
-        storageFormat(
-          ["string", "address"],
-          ["insurance.pool.insureeFeeRate", insurancePoolAddress]
-        )
+        storageFormat(["string", "address"], ["insurance.pool.insureeFeeRate", mockToken.address])
       )
     ).to.equal(5);
 
     expect(
       await eternalStorage.functions.getUint(
-        storageFormat(
-          ["string", "address"],
-          ["insurance.pool.serviceFeeRate", insurancePoolAddress]
-        )
+        storageFormat(["string", "address"], ["insurance.pool.serviceFeeRate", mockToken.address])
       )
     ).to.equal(2);
 
     expect(
       await eternalStorage.functions.getUint(
-        storageFormat(["string", "address"], ["insurance.pool.premiumPeriod", insurancePoolAddress])
+        storageFormat(["string", "address"], ["insurance.pool.premiumPeriod", mockToken.address])
       )
     ).to.equal(172800);
   });

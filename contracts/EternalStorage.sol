@@ -4,7 +4,6 @@ pragma experimental ABIEncoderV2;
 import "./lib/StorageHelper.sol";
 import "./InsurancePool.sol";
 
-
 /// @author PanDAO - https://pandao.org
 /// @title  Implementation of Eternal Storage(https://fravoll.github.io/solidity-patterns/eternal_storage.html)
 /// @notice This contract is used for storing contract network data
@@ -43,7 +42,7 @@ contract EternalStorage {
   /// @param _key bytes32 location should be keccak256 and abi.encodePacked
   /// @return string _value from storage _key location
   function getString(bytes32 _key) external view returns (string memory) {
-    require(_key[0] != 0);
+    require(_key[0] != 0, "PanDAO: Zero Address");
 
     return s.stringStorage[_key];
   }
@@ -73,7 +72,7 @@ contract EternalStorage {
   /// @param _key bytes32 location should be keccak256 and abi.encodePacked
   /// @return bytes _value from storage _key location
   function getBytes(bytes32 _key) external view returns (bytes memory) {
-    require(_key[0] != 0);
+    require(_key[0] != 0, "PanDAO: Zero Address");
 
     return s.bytesStorage[_key];
   }
@@ -145,6 +144,8 @@ contract EternalStorage {
   /// @dev restricted to latest PanDAO Networks contracts
   /// @param _key bytes32 location should be keccak256 and abi.encodePacked
   function deleteString(bytes32 _key) external {
+    require(_key[0] != 0, "PanDAO: Zero Address");
+
     delete s.stringStorage[_key];
   }
 

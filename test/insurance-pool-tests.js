@@ -53,7 +53,7 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
     InsurancePool = await deployments.get("InsurancePool");
 
     const insurancePoolAddress = await eternalStorage.functions.getAddress(
-      storageFormat(["string", "string"], ["insurance.pool.name", "BTC++"])
+      storageFormat(["string", "address"], ["insurance.pool.address", mockToken.address])
     );
 
     ip = new ethers.Contract(insurancePoolAddress, InsurancePool.abi, agent);
@@ -62,11 +62,12 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
   it(`Should deposit ${testAmount} insurable tokens as liquidity to the Insurance Pool contract and receive an equal amount of LPAN Tokens`, async () => {
     await mockToken.functions.approve(InsurancePool.address, testAmount);
 
-    await ip.functions.addLiquidity(agent._address, testAmount);
+    await ip.functions.addLiquidity(mockToken.address, agent._address, testAmount);
 
     const liquidityTokenAddress = await eternalStorage.functions.getAddress(
-      storageFormat(["string", "address"], ["insurance.pool.liquidityToken", InsurancePool.address])
+      storageFormat(["string", "address"], ["insurance.pool.liquidityToken", mockToken.address])
     );
+
     const liquidityToken = new ethers.Contract(liquidityTokenAddress, InsuranceToken.abi, agent);
 
     // test storage

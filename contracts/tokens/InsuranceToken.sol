@@ -8,7 +8,6 @@ import "@openzeppelin/contracts/token/ERC20/ERC20Pausable.sol";
 import "../Manager.sol";
 import "../lib/StorageHelper.sol";
 
-
 /**
  * @dev {ERC20} token, including:
  *

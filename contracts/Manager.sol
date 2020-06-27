@@ -9,7 +9,6 @@ import "./lib/StorageHelper.sol";
 import "./lib/StringHelper.sol";
 import "./InsurancePool.sol";
 
-
 /// @author PanDAO - https://pandao.org
 /// @title PanDAO Contract Network Manager
 /// @notice This contract can be used by PanDAO to manage `InsurancePools` and resolve claims

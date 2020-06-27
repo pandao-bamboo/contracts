@@ -7,7 +7,6 @@ import "../lib/StringHelper.sol";
 /// Imports
 import "../tokens/InsuranceToken.sol";
 
-
 /// @author PanDAO - https://pandao.org
 /// @title PanDAO Insurance Pool Token Factory
 /// @notice TokenFactory creates ERC20 tokens to represent a persons liquidity or claim in the pool
@@ -26,15 +25,15 @@ contract TokenFactory {
   address[] internal tokens;
 
   /// @dev Ensures that only active Insurance Pools can create tokens
-  modifier onlyPools(address _poolAddress) {
+  modifier onlyPools(address sender, address _insuredAssetAddress) {
     _;
     EternalStorage eternalStorage = EternalStorage(eternalStorageAddress);
 
     address insurancePool = eternalStorage.getAddress(
-      StorageHelper.formatAddress("insurance.pool.address", _poolAddress)
+      StorageHelper.formatAddress("insurance.pool.address", _insuredAssetAddress)
     );
 
-    require(insurancePool != address(0), "PanDAO: Only insurance pools can create new tokens");
+    require(insurancePool == sender, "PanDAO: Only insurance pools can create new tokens");
   }
 
   constructor(address _eternalStorageAddress) public {
@@ -49,11 +48,11 @@ contract TokenFactory {
   /// @dev Returns LiquidityToken in index position 0 and Claims token in index position 1
   /// @param _insurableAssetSymbol string Insured token symbol
   /// @return address[] Array of token addresses.
-  function createTokens(string memory _insurableAssetSymbol, address _insurancePoolAddress)
-    public
-    onlyPools(msg.sender)
-    returns (address[] memory)
-  {
+  function createTokens(
+    string memory _insurableAssetSymbol,
+    address _insuredAssetAddress,
+    address _insurancePoolAddress
+  ) public onlyPools(msg.sender, _insuredAssetAddress) returns (address[] memory) {
     /// Liquidity Token
     address liquidityToken = _createLiquidityToken(_insurableAssetSymbol, _insurancePoolAddress);
     tokens.push(address(liquidityToken));

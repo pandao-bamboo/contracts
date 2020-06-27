@@ -1,6 +1,6 @@
 const ethers = require("ethers");
 const bre = require("@nomiclabs/buidler").ethers;
-const storageFormat = require("../utils/deployment").storageFormat;
+const storageFormat = require("../test/utils/deployment").storageFormat;
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
   const { log } = deployments;
@@ -28,9 +28,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   // Setup DAO Agent
   if (daoAgent == nullRecord) {
     await setAddress(daoAgentLocation, agent);
-    log(
-      `##### PanDAO(Storage): Agent Initialized - (Loc:${daoAgentLocation} / agent: ${agent})`
-    );
+    log(`##### PanDAO(Storage): Agent Initialized - (Loc:${daoAgentLocation} / agent: ${agent})`);
   } else {
     log(`##### PanDAO: Agent already initialized`);
   }
@@ -48,16 +46,11 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     storageFormat(["string", "address"], ["contract.address", Manager.address]),
     Manager.address
   );
-  log(
-    `##### PanDAO(Storage): Manager Initialized - (Contract: ${Manager.address})`
-  );
+  log(`##### PanDAO(Storage): Manager Initialized - (Contract: ${Manager.address})`);
 
   // Initialize TokenFactory Contract to Storage
   await setAddress(
-    storageFormat(
-      ["string", "address"],
-      ["contract.owner", TokenFactory.address]
-    ),
+    storageFormat(["string", "address"], ["contract.owner", TokenFactory.address]),
     Manager.address
   );
   await setAddress(
@@ -65,15 +58,10 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     TokenFactory.address
   );
   await setAddress(
-    storageFormat(
-      ["string", "address"],
-      ["contract.address", TokenFactory.address]
-    ),
+    storageFormat(["string", "address"], ["contract.address", TokenFactory.address]),
     TokenFactory.address
   );
-  log(
-    `##### PanDAO(Storage): TokenFactory Initialized - (Contract: ${TokenFactory.address})`
-  );
+  log(`##### PanDAO(Storage): TokenFactory Initialized - (Contract: ${TokenFactory.address})`);
 
   // THIS SHOULD ALWAYS BE LAST!!!!!
   // Once the storage is initialized only the
@@ -86,10 +74,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     log(`##### PanDAO: Initializing Storage`);
 
     await setAddress(
-      storageFormat(
-        ["string", "address"],
-        ["contract.owner", EternalStorage.address]
-      ),
+      storageFormat(["string", "address"], ["contract.owner", EternalStorage.address]),
       Manager.address
     );
     await setAddress(
@@ -97,16 +82,10 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
       EternalStorage.address
     );
     await setAddress(
-      storageFormat(
-        ["string", "address"],
-        ["contract.address", EternalStorage.address]
-      ),
+      storageFormat(["string", "address"], ["contract.address", EternalStorage.address]),
       EternalStorage.address
     );
-    await setBool(
-      storageFormat(["string"], ["contract.storage.initialized"]),
-      true
-    );
+    await setBool(storageFormat(["string"], ["contract.storage.initialized"]), true);
   } else {
     log(`##### PanDAO: (Not Upgraded)Storage Already Initialized}`);
   }

@@ -15,9 +15,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   );
 
   if (tokenFactory.newlyDeployed) {
-    log(
-      `##### PanDAO: TokenFactory has been deployed: ${tokenFactory.address}`
-    );
+    log(`##### PanDAO: TokenFactory has been deployed: ${tokenFactory.address}`);
   }
 };
 module.exports.tags = ["TokenFactory"];

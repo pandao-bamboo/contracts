@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Pausable.sol";
 import "../Manager.sol";
-
+import "../lib/StorageHelper.sol";
 
 /**
  * @dev {ERC20} token, including:
@@ -22,55 +22,96 @@ import "../Manager.sol";
  * roles, as well as the default admin role, which will let it grant both minter
  * and pauser roles to aother accounts
  */
-contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable {
-    constructor(string memory name, string memory symbol)
-        public
-        ERC20(name, symbol)
-    {}
+contract InsuranceToken is Context, ERC20Burnable, ERC20Pausable, Manager {
+  constructor(
+    string memory _name,
+    string memory _symbol,
+    address _eternalStorageAddress,
+    address _insurancePoolAddress
+  ) public ERC20(_name, _symbol) Manager(_eternalStorageAddress) {
+    eternalStorage.setAddress(
+      StorageHelper.formatAddress("contract.owner", address(this)),
+      _insurancePoolAddress
+    );
+  }
 
-    /**
-     * @dev Creates `amount` new tokens for `to`.
-     *
-     * See {ERC20-_mint}.
-     *
-     * Requirements:
-     *
-     */
-    function mint(address to, uint256 amount) public {
-        _mint(to, amount);
-    }
+  function approve(
+    address owner,
+    address spender,
+    uint256 amount
+  )
+    public
+    onlyOwner(
+      eternalStorage.getAddress(StorageHelper.formatAddress("contract.owner", address(this))),
+      address(this)
+    )
+    returns (bool)
+  {
+    _approve(owner, spender, amount);
+    return true;
+  }
 
-    /**
-     * @dev Pauses all token transfers.
-     *
-     * See {ERC20Pausable} and {Pausable-_pause}.
-     *
-     * Requirements:
-     *
-     * - the caller must have the `PAUSER_ROLE`.
-     */
-    function pause() public {
-        _pause();
-    }
+  /**
+   * @dev Creates `amount` new tokens for `to`.
+   *
+   * See {ERC20-_mint}.
+   *
+   * Requirements:
+   *
+   */
+  function mint(address _to, uint256 _amount)
+    public
+    onlyOwner(
+      eternalStorage.getAddress(StorageHelper.formatAddress("contract.owner", address(this))),
+      address(this)
+    )
+  {
+    _mint(_to, _amount);
+  }
 
-    /**
-     * @dev Unpauses all token transfers.
-     *
-     * See {ERC20Pausable} and {Pausable-_unpause}.
-     *
-     * Requirements:
-     *
-     * - the caller must have the `PAUSER_ROLE`.
-     */
-    function unpause() public {
-        _unpause();
-    }
+  /**
+   * @dev Pauses all token transfers.
+   *
+   * See {ERC20Pausable} and {Pausable-_pause}.
+   *
+   * Requirements:
+   *
+   * - the caller must have the `PAUSER_ROLE`.
+   */
+  function pause()
+    public
+    onlyOwner(
+      eternalStorage.getAddress(StorageHelper.formatAddress("contract.owner", address(this))),
+      address(this)
+    )
+  {
+    _pause();
+  }
 
-    // prettier-ignore
-    function _beforeTokenTransfer(address from, address to, uint256 amount)
+  /**
+   * @dev Unpauses all token transfers.
+   *
+   * See {ERC20Pausable} and {Pausable-_unpause}.
+   *
+   * Requirements:
+   *
+   * - the caller must have the `PAUSER_ROLE`.
+   */
+  function unpause()
+    public
+    onlyOwner(
+      eternalStorage.getAddress(StorageHelper.formatAddress("contract.owner", address(this))),
+      address(this)
+    )
+  {
+    _unpause();
+  }
+
+  // prettier-ignore
+  function _beforeTokenTransfer(address _from, address _to, uint256 _amount)
         internal
         override(ERC20, ERC20Pausable)
     {
-        super._beforeTokenTransfer(from, to, amount);
+        super._beforeTokenTransfer(_from, _to, _amount);
     }
 }

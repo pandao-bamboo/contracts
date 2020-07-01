@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity 0.6.10;
 import "../EternalStorage.sol";
 import "./StringHelper.sol";
 import "@nomiclabs/buidler/console.sol";
@@ -104,18 +104,25 @@ library StorageHelper {
     address _liquidityProviderAddress,
     uint256 _amount
   ) internal {
-    // /// @notice Get depositers liquidity providers current balance
-    // /// @notice update the depositers liquidity provider balance
-    // /// @notice Get current InsurancePool balance
-    // /// @notice update the pool balance
     uint256 balance = _eternalStorage.getUint(
       formatAddress("insurance.pool.balance", _insuredAssetAddress)
     );
+    uint256 updatedBalance = balance + _amount;
+    _eternalStorage.setUint(
+      formatAddress("insurance.pool.balance", _insuredAssetAddress),
+      updatedBalance
+    );
 
-    // _eternalStorage.setUint(
-    //   formatAddress("insurance.pool.balance", _insuredAssetAddress),
-    //   _amount + balance
-    // );
+    bytes32 userBalanceLocation = formatAddress(
+      StringHelper.concat(
+        "insurance.pool.userBalance",
+        StringHelper.toString(_liquidityProviderAddress)
+      ),
+      _insuredAssetAddress
+    );
+    uint256 userBalance = _eternalStorage.getUint(userBalanceLocation);
+    uint256 updatedUserBalance = userBalance + _amount;
+    _eternalStorage.setUint(userBalanceLocation, updatedUserBalance);
   }
 
   /// @notice Format Storage Locations into bytes32

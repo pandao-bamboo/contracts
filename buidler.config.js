@@ -11,9 +11,9 @@ const ETHERSCAN_API_KEY = process.env.ETHERSCAN || "";
 module.exports = {
   defaultNetwork: "buidlerevm",
   solc: {
-    version: "0.6.6",
+    version: "0.6.10",
     optimizer: {
-      runs: 200,
+      runs: 1,
       enabled: true,
     },
   },
@@ -33,6 +33,10 @@ module.exports = {
   paths: {
     deploy: "deploy",
     deployments: "deployments",
+    sources: "./contracts",
+    tests: "./test",
+    cache: "./cache",
+    artifacts: "./artifacts",
   },
   namedAccounts: {
     agent: {

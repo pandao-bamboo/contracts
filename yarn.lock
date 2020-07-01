@@ -284,6 +284,17 @@
     "@ethersproject/properties" "^5.0.0"
     elliptic "6.5.2"
 
+"@ethersproject/solidity@^5.0.1":
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/@ethersproject/solidity/-/solidity-5.0.1.tgz#df561603ba1c420e2ea309fca746698c55710a6d"
+  integrity sha512-3L+xI1LaJmd2zBJxnK9Y4cd1vb2aJLFvL6fxvjWpzcMiFiZ4dbPwj3kharv5f5mAlbGwAs6NiPJaFWvbOpm96Q==
+  dependencies:
+    "@ethersproject/bignumber" "^5.0.0"
+    "@ethersproject/bytes" "^5.0.0"
+    "@ethersproject/keccak256" "^5.0.0"
+    "@ethersproject/sha2" "^5.0.0"
+    "@ethersproject/strings" "^5.0.0"
+
 "@ethersproject/strings@^5.0.0":
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/@ethersproject/strings/-/strings-5.0.1.tgz#a93aafeede100c4aad7f48e25aad1ddc42eeccc7"
@@ -1749,10 +1760,10 @@ buffer@^5.0.5, buffer@^5.2.1:
     base64-js "^1.0.2"
     ieee754 "^1.1.4"
 
-buidler-deploy@^0.4.5:
-  version "0.4.5"
-  resolved "https://registry.yarnpkg.com/buidler-deploy/-/buidler-deploy-0.4.5.tgz#cc076f082045d0824e7a591b5a9b8e8f46bd42c8"
-  integrity sha512-44qxCPp9+wubqR/9Hht+/prKTZWkpdwteOaN6Qbmqzk9wNST+tgaXCeyeZu58vcxUETaCibAfe4y2Qq3c/n12Q==
+buidler-deploy@^0.4.7:
+  version "0.4.7"
+  resolved "https://registry.yarnpkg.com/buidler-deploy/-/buidler-deploy-0.4.7.tgz#dc9a3829b0ddae12deced1502a0ae4e8a5819792"
+  integrity sha512-C+Ve82rYKamKYWCybFTw4lKJZvlo/1wU5Wia4wYxTUqg3D5wwkJ2xCzlNJB+n4hHnQvFSxQQQw/dDa0ZIYtJyA==
   dependencies:
     "@ethersproject/abstract-signer" "^5.0.0-beta.144"
     "@ethersproject/address" "^5.0.0-beta.135"
@@ -1760,6 +1771,7 @@ buidler-deploy@^0.4.5:
     "@ethersproject/contracts" "^5.0.0-beta.155"
     "@ethersproject/logger" "^5.0.0-beta.137"
     "@ethersproject/providers" "^5.0.0-beta.168"
+    "@ethersproject/solidity" "^5.0.1"
     "@ethersproject/transactions" "^5.0.0-beta.136"
     "@ethersproject/wallet" "^5.0.0-beta.141"
     chalk "^4.0.0"

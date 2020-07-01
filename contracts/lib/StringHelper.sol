@@ -1,4 +1,4 @@
-pragma solidity 0.6.6;
+pragma solidity 0.6.10;
 
 library StringHelper {
   function concat(string memory a, string memory b) internal pure returns (string memory) {

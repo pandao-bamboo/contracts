@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity 0.6.10;
 import "../EternalStorage.sol";
 import "./StringHelper.sol";
 import "@nomiclabs/buidler/console.sol";

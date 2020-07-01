@@ -1,4 +1,4 @@
-pragma solidity 0.6.6;
+pragma solidity 0.6.10;
 
 import "@nomiclabs/buidler/console.sol";
 import "@pie-dao/proxy/contracts/PProxyPausable.sol";
@@ -15,7 +15,7 @@ import "./InsurancePool.sol";
 /// @dev All functionality controlled by Aragon AGENT
 contract Manager {
   /// @dev Gives access to PanDAO Eternal Storage
-  address public eternalStorageAddress;
+  address internal eternalStorageAddress;
   EternalStorage internal eternalStorage;
 
   //////////////////////////////

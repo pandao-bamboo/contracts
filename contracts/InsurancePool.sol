@@ -9,9 +9,7 @@ import "./tokens/InsuranceToken.sol";
 
 /// @author PanDAO - https://pandao.org
 /// @title PanDAO Insurance Pool
-/// @notice PanDAO Insurance Pool is the implementation contract which allows a user to add/remove liquidity, claim rewards, and create claims
 contract InsurancePool {
-  /// @dev Gives access to PanDAO Eternal Storage
   EternalStorage internal eternalStorage;
 
   event InsurancePoolCreated(
@@ -19,11 +17,17 @@ contract InsurancePool {
     address insuredAssetAddress,
     string insuredAssetSymbol,
     uint256 insureeFeeRate,
-    uint256 premiumPeriod,
     uint256 serviceFeeRate
   );
 
   event liquidityAddedToPool(
+    address insurancePoolAddress,
+    address insuredAssetAddress,
+    address liquidityProvider,
+    uint256 amount
+  );
+
+  event liquidityRemovedFromPool(
     address insurancePoolAddress,
     address insuredAssetAddress,
     address liquidityProvider,
@@ -35,7 +39,6 @@ contract InsurancePool {
   /// @param _insurableAssetSymbol the symbol for the digital asset to be insured
   /// @param _insureeFeeRate The rate the insuree pays
   /// @param _serviceFeeRate The DAO's cut from the insuree premium
-  /// @param _premiumPeriod number of blocks between premium payments
   /// @param _eternalStorageAddress address contract address of eternalStorage
   /// @dev _insureeFeeRate - _serviceFeeRate = insurerFee
   constructor(
@@ -43,7 +46,6 @@ contract InsurancePool {
     string memory _insurableAssetSymbol,
     uint256 _insureeFeeRate,
     uint256 _serviceFeeRate,
-    uint256 _premiumPeriod,
     address _eternalStorageAddress
   ) public {
     eternalStorage = EternalStorage(_eternalStorageAddress);
@@ -52,7 +54,6 @@ contract InsurancePool {
       StorageHelper.formatAddress("insurance.pool.insuredAsset", _insurableAssetAddress)
     );
 
-    /// @dev Require insurable token to be unique
     require(insurableToken == address(0), "PanDAO: Insurance Pool already exists for that asset");
 
     bool poolInitialized = StorageHelper.initializeInsurancePool(
@@ -65,7 +66,6 @@ contract InsurancePool {
 
     require(poolInitialized == true, "PanDAO: Failed to initialized Insurance Pool");
 
-    /// @dev Create liquidity and claims tokens for pool
     TokenFactory tokenFactory = TokenFactory(
       eternalStorage.getAddress(StorageHelper.formatString("contract.name", "TokenFactory"))
     );
@@ -84,8 +84,7 @@ contract InsurancePool {
       _insurableAssetAddress,
       _insurableAssetSymbol,
       _insureeFeeRate,
-      _serviceFeeRate,
-      _premiumPeriod
+      _serviceFeeRate
     );
 
     emit InsurancePoolCreated(
@@ -93,14 +92,9 @@ contract InsurancePool {
       _insurableAssetAddress,
       _insurableAssetSymbol,
       _insureeFeeRate,
-      _premiumPeriod,
       _serviceFeeRate
     );
   }
-
-  //////////////////////////////
-  /// @notice Public
-  /////////////////////////////
 
   /// @notice Adds liquidity for matching to the Insurance Pool
   /// @param _liquidityProviderAddress Address for the liquidity provider
@@ -114,19 +108,14 @@ contract InsurancePool {
       StorageHelper.formatAddress("insurance.pool.liquidityToken", _insuredAssetAddress)
     );
 
-    InsuranceToken liquidityToken = InsuranceToken(liquidityTokenAddress);
-
     ERC20 insuredAsset = ERC20(_insuredAssetAddress);
-
     insuredAsset.transferFrom(_liquidityProviderAddress, address(this), _amount);
 
-    /// @dev Mint 1:1 representation of liquidity stored in contract
+    InsuranceToken liquidityToken = InsuranceToken(liquidityTokenAddress);
     liquidityToken.mint(_liquidityProviderAddress, _amount);
-
-    /// @dev Approve the insurance pool to transfer the liquidity representation tokens back
     liquidityToken.approve(_liquidityProviderAddress, address(this), _amount);
 
-    StorageHelper.updateLiquidity(
+    StorageHelper.addLiquidity(
       eternalStorage,
       _insuredAssetAddress,
       _liquidityProviderAddress,
@@ -143,17 +132,40 @@ contract InsurancePool {
 
   function buyInsurance() public {}
 
-  function claimRewards() public {}
+  function createClaim() public {}
 
-  function createInsuranceClaim() public {}
+  function removeLiquidity(
+    address _insuredAssetAddress,
+    address _liquidityProviderAddress,
+    uint256 _amount
+  ) public payable {
+    /// Todo: when a LP removes their funds from a pool it should call settlement(?) to capture premiums;
 
-  function getClaimsBalance() public {}
+    address liquidityTokenAddress = eternalStorage.getAddress(
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", _insuredAssetAddress)
+    );
 
-  function getLiquidityBalance() public {}
+    ERC20 insuredAsset = ERC20(_insuredAssetAddress);
+    insuredAsset.transfer(_liquidityProviderAddress, _amount);
 
-  function removeLiquidity() public {}
+    InsuranceToken liquidityToken = InsuranceToken(liquidityTokenAddress);
+    liquidityToken.transferFrom(_liquidityProviderAddress, address(this), _amount);
+    liquidityToken.burn(_amount);
 
-  //////////////////////////////
-  /// @notice Private
-  /////////////////////////////
+    StorageHelper.removeLiquidity(
+      eternalStorage,
+      _insuredAssetAddress,
+      _liquidityProviderAddress,
+      _amount
+    );
+
+    emit liquidityRemovedFromPool(
+      address(this),
+      _insuredAssetAddress,
+      _liquidityProviderAddress,
+      _amount
+    );
+  }
+
+  function settlement() public {}
 }

@@ -14,13 +14,8 @@ import "./InsurancePool.sol";
 /// @notice This contract can be used by PanDAO to manage `InsurancePools` and resolve claims
 /// @dev All functionality controlled by Aragon AGENT
 contract Manager {
-  /// @dev Gives access to PanDAO Eternal Storage
   address internal eternalStorageAddress;
   EternalStorage internal eternalStorage;
-
-  //////////////////////////////
-  /// @notice Modifiers
-  /////////////////////////////
 
   /// @dev Ensures only Aragon Agent can call functions
   modifier onlyAgent() {
@@ -41,10 +36,6 @@ contract Manager {
     _;
   }
 
-  //////////////////////////////
-  /// @notice Events
-  /////////////////////////////
-
   event InsurancePoolCreated(address indexed insurancePoolAddress, string symbol);
 
   event InsurancePoolPaused(address indexed insurancePoolAddress, string symbol);
@@ -54,23 +45,17 @@ contract Manager {
     eternalStorage = EternalStorage(eternalStorageAddress);
   }
 
-  //////////////////////////////
-  /// @notice Public Functions
-  /////////////////////////////
-
   /// @notice Create a new PanDAO Insurance Pool
   /// @dev This function can only be called by the Aragon Agent
   /// @param _insuredAssetAddress address of the digital asset we want to insure
   /// @param _insuredAssetSymbol string token symbol
   /// @param _insureeFeeRate uint256 fee the insuree pays
   /// @param _serviceFeeRate uint256 DAO fee
-  /// @param _premiumPeriod uint256 how often premium is pulled from the wallet insuree's wallet
   function createInsurancePool(
     address _insuredAssetAddress,
     string memory _insuredAssetSymbol,
     uint256 _insureeFeeRate,
-    uint256 _serviceFeeRate,
-    uint256 _premiumPeriod
+    uint256 _serviceFeeRate
   ) public onlyAgent() {
     require(
       eternalStorage.getAddress(
@@ -84,7 +69,6 @@ contract Manager {
       _insuredAssetSymbol,
       _insureeFeeRate,
       _serviceFeeRate,
-      _premiumPeriod,
       eternalStorageAddress
     );
 
@@ -96,11 +80,21 @@ contract Manager {
     emit InsurancePoolCreated(address(insurancePool), _insuredAssetSymbol);
   }
 
-  function pauseNetwork() public onlyAgent() {}
-
   function approveInsuranceClaim() public onlyAgent() {}
 
   function denyInsuranceClaim() public onlyAgent() {}
+
+  function pauseNetwork() public onlyAgent() {}
+
+  function pausePool() public onlyAgent() {}
+
+  function setInsureeFee() public onlyAgent() {}
+
+  function setServiceFee() public onlyAgent() {}
+
+  function unpauseNetwork() public onlyAgent() {}
+
+  function unpausePool() public onlyAgent() {}
 
   function updateContractImplementation() public onlyAgent() {}
 }

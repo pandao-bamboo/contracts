@@ -49,7 +49,6 @@ library StorageHelper {
   /// @param _insuredAssetSymbol string Token symbol
   /// @param _insureeFeeRate uint256 Rate insurance buyer pays
   /// @param _serviceFeeRate uint256 Rate paid to the DAO
-  /// @param _premiumPeriod uint256 Premium period in blocks
   /// @dev insureeFeeRate - serviceFeeRate = Liquidity Provider Earnings
   function saveInsurancePool(
     EternalStorage _eternalStorage,
@@ -59,8 +58,7 @@ library StorageHelper {
     address _insuredAssetAddress,
     string memory _insuredAssetSymbol,
     uint256 _insureeFeeRate,
-    uint256 _serviceFeeRate,
-    uint256 _premiumPeriod
+    uint256 _serviceFeeRate
   ) internal {
     /// @dev Saves IPool to EternalStorage
     _eternalStorage.setAddress(
@@ -91,14 +89,10 @@ library StorageHelper {
       formatAddress("insurance.pool.serviceFeeRate", _insuredAssetAddress),
       _serviceFeeRate
     );
-    _eternalStorage.setUint(
-      formatAddress("insurance.pool.premiumPeriod", _insuredAssetAddress),
-      _premiumPeriod
-    );
   }
 
   /// @notice Update the Insurance Pool liquidity and an existing or new liquidity provider adds liquidity
-  function updateLiquidity(
+  function addLiquidity(
     EternalStorage _eternalStorage,
     address _insuredAssetAddress,
     address _liquidityProviderAddress,
@@ -122,6 +116,33 @@ library StorageHelper {
     );
     uint256 userBalance = _eternalStorage.getUint(userBalanceLocation);
     uint256 updatedUserBalance = userBalance + _amount;
+    _eternalStorage.setUint(userBalanceLocation, updatedUserBalance);
+  }
+
+  function removeLiquidity(
+    EternalStorage _eternalStorage,
+    address _insuredAssetAddress,
+    address _liquidityProviderAddress,
+    uint256 _amount
+  ) internal {
+    uint256 balance = _eternalStorage.getUint(
+      formatAddress("insurance.pool.balance", _insuredAssetAddress)
+    );
+    uint256 updatedBalance = balance - _amount;
+    _eternalStorage.setUint(
+      formatAddress("insurance.pool.balance", _insuredAssetAddress),
+      updatedBalance
+    );
+
+    bytes32 userBalanceLocation = formatAddress(
+      StringHelper.concat(
+        "insurance.pool.userBalance",
+        StringHelper.toString(_liquidityProviderAddress)
+      ),
+      _insuredAssetAddress
+    );
+    uint256 userBalance = _eternalStorage.getUint(userBalanceLocation);
+    uint256 updatedUserBalance = userBalance - _amount;
     _eternalStorage.setUint(userBalanceLocation, updatedUserBalance);
   }
 

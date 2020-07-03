@@ -41,7 +41,7 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
 
     insurancePool = await deploy("InsurancePool", {
       from: agent._address,
-      args: [mockToken.address, "BTC++", 5, 2, 172800, EternalStorage.address],
+      args: [mockToken.address, "BTC++", 5, 2, EternalStorage.address],
     });
     InsurancePool = await deployments.get("InsurancePool");
 
@@ -63,10 +63,24 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
 
     const liquidityToken = new ethers.Contract(liquidityTokenAddress, InsuranceToken.abi, agent);
 
-    // test storage
-
     // check balances on the tokens themselves to confirm
     expect(await liquidityToken.functions.balanceOf(agent._address)).to.equal(testAmount);
     expect(await mockToken.functions.balanceOf(InsurancePool.address)).to.equal(testAmount);
+  });
+
+  it(`Should remove ${testAmount} insurable tokens from liquidity pool and burn an equal amount of LPAN Tokens`, async () => {
+    await mockToken.functions.approve(InsurancePool.address, testAmount);
+    await ip.functions.addLiquidity(mockToken.address, agent._address, testAmount);
+
+    await ip.functions.removeLiquidity(mockToken.address, agent._address, testAmount);
+
+    const liquidityTokenAddress = await eternalStorage.functions.getAddress(
+      storageFormat(["string", "address"], ["insurance.pool.liquidityToken", mockToken.address])
+    );
+    const liquidityToken = new ethers.Contract(liquidityTokenAddress, InsuranceToken.abi, agent);
+
+    // check balances on the tokens themselves to confirm
+    expect(await liquidityToken.functions.balanceOf(agent._address)).to.equal(0);
+    expect(await mockToken.functions.balanceOf(InsurancePool.address)).to.equal(0);
   });
 });

@@ -63,13 +63,7 @@ describe("PanDAO Contract Network: Manager Contract", () => {
   });
 
   it("Can create an Insurance Pool if it doesn't exist", async () => {
-    const ip = await manager.functions.createInsurancePool(
-      mockToken.address,
-      "BTC++",
-      5,
-      2,
-      172800
-    );
+    const ip = await manager.functions.createInsurancePool(mockToken.address, "BTC++", 5, 2);
     const insurancePoolAddress = await eternalStorage.functions.getAddress(
       storageFormat(["string", "address"], ["insurance.pool.address", mockToken.address])
     );
@@ -114,12 +108,6 @@ describe("PanDAO Contract Network: Manager Contract", () => {
         storageFormat(["string", "address"], ["insurance.pool.serviceFeeRate", mockToken.address])
       )
     ).to.equal(2);
-
-    expect(
-      await eternalStorage.functions.getUint(
-        storageFormat(["string", "address"], ["insurance.pool.premiumPeriod", mockToken.address])
-      )
-    ).to.equal(172800);
   });
 
   it("Fails to create Insurance Pool if it already exists", async () => {
@@ -127,11 +115,10 @@ describe("PanDAO Contract Network: Manager Contract", () => {
       mockToken.address,
       "BTC++",
       5,
-      2,
-      172800
+      2
     );
     const duplicatePool = await expect(
-      manager.functions.createInsurancePool(mockToken.address, "BTC++", 5, 2, 172800)
+      manager.functions.createInsurancePool(mockToken.address, "BTC++", 5, 2)
     ).to.be.revertedWith("PanDAO: Insurance Pool already exists for that asset");
   });
 
@@ -139,7 +126,7 @@ describe("PanDAO Contract Network: Manager Contract", () => {
     notAgentSigner = new ethers.Contract(Manager.address, Manager.abi, address1);
 
     await expect(
-      notAgentSigner.functions.createInsurancePool(mockToken.address, "BTC++", 5, 2, 172800)
+      notAgentSigner.functions.createInsurancePool(mockToken.address, "BTC++", 5, 2)
     ).to.be.revertedWith("PanDAO: UnAuthorized - Agent only");
   });
 });

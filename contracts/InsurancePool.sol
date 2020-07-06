@@ -70,11 +70,7 @@ contract InsurancePool {
       eternalStorage.getAddress(StorageHelper.formatString("contract.name", "TokenFactory"))
     );
 
-    address[] memory tokens = tokenFactory.createTokens(
-      _insurableAssetSymbol,
-      _insurableAssetAddress,
-      address(this)
-    );
+    address[2] memory tokens = tokenFactory.createTokens(_insurableAssetSymbol, address(this));
 
     StorageHelper.saveInsurancePool(
       eternalStorage,
@@ -131,6 +127,8 @@ contract InsurancePool {
   }
 
   function buyInsurance() public {}
+
+  function payPremium() public {}
 
   function createClaim() public {}
 

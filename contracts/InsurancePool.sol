@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPLv3
+
 pragma solidity 0.6.10;
 pragma experimental ABIEncoderV2;
 
@@ -95,16 +97,15 @@ contract InsurancePool {
   /// @notice Adds liquidity for matching to the Insurance Pool
   /// @param _liquidityProviderAddress Address for the liquidity provider
   /// @param _amount Amount of liquidity to be added to the queue
-  function addLiquidity(
-    address _insuredAssetAddress,
-    address _liquidityProviderAddress,
-    uint256 _amount
-  ) public payable {
+  function addLiquidity(address _liquidityProviderAddress, uint256 _amount) public payable {
+    address insuredAssetAddress = eternalStorage.getAddress(
+      StorageHelper.formatAddress("insurance.pool.insuredAsset", address(this))
+    );
     address liquidityTokenAddress = eternalStorage.getAddress(
-      StorageHelper.formatAddress("insurance.pool.liquidityToken", _insuredAssetAddress)
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", insuredAssetAddress)
     );
 
-    ERC20 insuredAsset = ERC20(_insuredAssetAddress);
+    ERC20 insuredAsset = ERC20(insuredAssetAddress);
     insuredAsset.transferFrom(_liquidityProviderAddress, address(this), _amount);
 
     InsuranceToken liquidityToken = InsuranceToken(liquidityTokenAddress);
@@ -113,37 +114,67 @@ contract InsurancePool {
 
     StorageHelper.addLiquidity(
       eternalStorage,
-      _insuredAssetAddress,
+      insuredAssetAddress,
       _liquidityProviderAddress,
       _amount
     );
 
     emit liquidityAddedToPool(
       address(this),
-      _insuredAssetAddress,
+      insuredAssetAddress,
       _liquidityProviderAddress,
       _amount
     );
   }
 
-  function buyInsurance() public {}
+  function buyInsurance(uint256 _amount, uint8 _termLengthInMonths) public {
+    address insuredAssetAddress = eternalStorage.getAddress(
+      StorageHelper.formatAddress("insurance.pool.insuredAsset", address(this))
+    );
+    address claimsTokenAddress = eternalStorage.getAddress(
+      StorageHelper.formatAddress("insurance.pool.claimsToken", insuredAssetAddress)
+    );
+    address daoFinance = eternalStorage.getAddress(StorageHelper.formatGet("dao.finance"));
+
+    uint256 insureeFee = SafeMath.div(
+      eternalStorage.getUint(
+        StorageHelper.formatAddress("insurance.pool.insureeFee", insuredAssetAddress)
+      ),
+      100
+    );
+    uint256 serviceFee = SafeMath.div(
+      eternalStorage.getUint(
+        StorageHelper.formatAddress("insurance.pool.serviceFee", insuredAssetAddress)
+      ),
+      100
+    );
+    uint256 totalPremiumAmount = SafeMath.mul(_amount, insureeFee);
+    uint256 daoFee = SafeMath.mul(totalPremiumAmount, serviceFee);
+    uint256 poolShare = SafeMath.sub(totalPremiumAmount, daoFee);
+
+    ERC20 insuredAsset = ERC20(insuredAssetAddress);
+    insuredAsset.approve(address(this), totalPremiumAmount);
+    insuredAsset.transferFrom(msg.sender, address(this), totalPremiumAmount);
+    insuredAsset.transfer(daoFinance, daoFee);
+
+    InsuranceToken claimsToken = InsuranceToken(claimsTokenAddress);
+    claimsToken.mint(msg.sender, _amount);
+    claimsToken.approve(msg.sender, address(this), _amount);
+  }
 
   function payPremium() public {}
 
   function createClaim() public {}
 
-  function removeLiquidity(
-    address _insuredAssetAddress,
-    address _liquidityProviderAddress,
-    uint256 _amount
-  ) public payable {
-    /// Todo: when a LP removes their funds from a pool it should call settlement(?) to capture premiums;
-
+  function removeLiquidity(address _liquidityProviderAddress, uint256 _amount) public payable {
+    address insuredAssetAddress = eternalStorage.getAddress(
+      StorageHelper.formatAddress("insurance.pool.insuredAsset", address(this))
+    );
     address liquidityTokenAddress = eternalStorage.getAddress(
-      StorageHelper.formatAddress("insurance.pool.liquidityToken", _insuredAssetAddress)
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", insuredAssetAddress)
     );
 
-    ERC20 insuredAsset = ERC20(_insuredAssetAddress);
+    ERC20 insuredAsset = ERC20(insuredAssetAddress);
     insuredAsset.transfer(_liquidityProviderAddress, _amount);
 
     InsuranceToken liquidityToken = InsuranceToken(liquidityTokenAddress);
@@ -152,14 +183,14 @@ contract InsurancePool {
 
     StorageHelper.removeLiquidity(
       eternalStorage,
-      _insuredAssetAddress,
+      insuredAssetAddress,
       _liquidityProviderAddress,
       _amount
     );
 
     emit liquidityRemovedFromPool(
       address(this),
-      _insuredAssetAddress,
+      insuredAssetAddress,
       _liquidityProviderAddress,
       _amount
     );

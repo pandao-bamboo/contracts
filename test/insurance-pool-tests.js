@@ -33,6 +33,9 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
     manager = new ethers.Contract(Manager.address, Manager.abi, agent);
 
     EternalStorage = await deployments.get("EternalStorage");
+    StorageHelper = await deployments.get("StorageHelper");
+    PoolsHelper = await deployments.get("PoolsHelper");
+    StringHelper = await deployments.get("StringHelper");
     eternalStorage = new ethers.Contract(EternalStorage.address, EternalStorage.abi, agent);
 
     MockToken = await bre.getContractFactory("Token");
@@ -42,6 +45,11 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
     insurancePool = await deploy("InsurancePool", {
       from: agent._address,
       args: [mockToken.address, "BTC++", 5, 2, EternalStorage.address],
+      libraries: {
+        PoolsHelper: PoolsHelper.address,
+        StorageHelper: StorageHelper.address,
+        StringHelper: StringHelper.address,
+      },
     });
     InsurancePool = await deployments.get("InsurancePool");
 
@@ -55,7 +63,7 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
   it(`Should deposit ${testAmount} insurable tokens as liquidity to the Insurance Pool contract and receive an equal amount of LPAN Tokens`, async () => {
     await mockToken.functions.approve(InsurancePool.address, testAmount);
 
-    await ip.functions.addLiquidity(mockToken.address, agent._address, testAmount);
+    await ip.functions.addLiquidity(agent._address, testAmount);
 
     const liquidityTokenAddress = await eternalStorage.functions.getAddress(
       storageFormat(["string", "address"], ["insurance.pool.liquidityToken", mockToken.address])
@@ -70,9 +78,9 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
 
   it(`Should remove ${testAmount} insurable tokens from liquidity pool and burn an equal amount of LPAN Tokens`, async () => {
     await mockToken.functions.approve(InsurancePool.address, testAmount);
-    await ip.functions.addLiquidity(mockToken.address, agent._address, testAmount);
+    await ip.functions.addLiquidity(agent._address, testAmount);
 
-    await ip.functions.removeLiquidity(mockToken.address, agent._address, testAmount);
+    await ip.functions.removeLiquidity(agent._address, testAmount);
 
     const liquidityTokenAddress = await eternalStorage.functions.getAddress(
       storageFormat(["string", "address"], ["insurance.pool.liquidityToken", mockToken.address])

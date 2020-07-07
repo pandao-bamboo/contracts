@@ -9,7 +9,7 @@
     "ethereum": "npx buidler node",
     "console": "npx buidler console",
     "test": "npx buidler test",
-    "coverage": "yarn run compile && npx buidler coverage --temp artifacts"
+    "coverage": "yarn run compile && npx buidler coverage"
   },
   "repository": {
     "type": "git",

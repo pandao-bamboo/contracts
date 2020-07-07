@@ -4,7 +4,7 @@ const storageFormat = require("../test/utils/deployment").storageFormat;
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
   const { log } = deployments;
-  const { agent } = await getNamedAccounts();
+  const { agent, finance } = await getNamedAccounts();
   const nullRecord = "0x0000000000000000000000000000000000000000";
 
   // Storage
@@ -25,9 +25,12 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const daoAgentLocation = storageFormat(["string"], ["dao.agent"]);
   const daoAgent = await getAddress(daoAgentLocation);
 
+  const daoFinanceLocation = storageFormat(["string"], ["dao.finance"]);
+
   // Setup DAO Agent
   if (daoAgent == nullRecord) {
     await setAddress(daoAgentLocation, agent);
+    await setAddress(daoFinanceLocation, finance);
     log(`##### PanDAO(Storage): Agent Initialized - (Loc:${daoAgentLocation} / agent: ${agent})`);
   } else {
     log(`##### PanDAO: Agent already initialized`);

@@ -42,5 +42,8 @@ module.exports = {
     agent: {
       default: 0,
     },
+    finance: {
+      default: 2,
+    },
   },
 };

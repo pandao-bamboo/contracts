@@ -1,7 +1,9 @@
+// SPDX-License-Identifier: GPLv3
+
 pragma solidity 0.6.10;
 
-import "./StringHelper.sol";
 import "../tokens/InsuranceToken.sol";
+import "./StringHelper.sol";
 
 library PoolsHelper {
   event TokenCreated(string _tokenName, string _tokenSymbol, address indexed _tokenAddress);
@@ -13,7 +15,7 @@ library PoolsHelper {
     string memory _insurableAssetSymbol,
     address _insurancePoolAddress,
     address _eternalStorageAddress
-  ) internal returns (InsuranceToken claimsToken) {
+  ) external returns (InsuranceToken claimsToken) {
     string memory claimsTokenName = StringHelper.concat(
       "PanDAO Claims Token - ",
       _insurableAssetSymbol
@@ -38,7 +40,7 @@ library PoolsHelper {
     string memory _insurableAssetSymbol,
     address _insurancePoolAddress,
     address _eternalStorageAddress
-  ) internal returns (InsuranceToken liquidityToken) {
+  ) external returns (InsuranceToken liquidityToken) {
     string memory liquidityTokenName = StringHelper.concat(
       "PanDAO Liquidity Token - ",
       _insurableAssetSymbol

@@ -1,7 +1,9 @@
+// SPDX-License-Identifier: GPLv3
+
 pragma solidity 0.6.10;
+
 import "../EternalStorage.sol";
 import "./StringHelper.sol";
-import "@nomiclabs/buidler/console.sol";
 
 library StorageHelper {
   /// @notice Initialized a new contract in EternalStorage
@@ -15,7 +17,7 @@ library StorageHelper {
     address _contractOwnerAddress,
     string memory _contractName,
     address _insuredAssetAddress
-  ) internal returns (bool) {
+  ) external returns (bool) {
     /// @dev initialize contract in EternalStorage
     _eternalStorage.setAddress(
       formatAddress("contract.owner", _contractAddress),
@@ -59,7 +61,7 @@ library StorageHelper {
     string memory _insuredAssetSymbol,
     uint256 _insureeFeeRate,
     uint256 _serviceFeeRate
-  ) internal {
+  ) external {
     /// @dev Saves IPool to EternalStorage
     _eternalStorage.setAddress(
       formatAddress("insurance.pool.liquidityToken", _insuredAssetAddress),
@@ -75,6 +77,10 @@ library StorageHelper {
     );
     _eternalStorage.setAddress(
       formatAddress("insurance.pool.insuredAsset", _insuredAssetAddress),
+      _insuredAssetAddress
+    );
+    _eternalStorage.setAddress(
+      formatAddress("insurance.pool.insuredAsset", _insurancePoolAddress),
       _insuredAssetAddress
     );
     _eternalStorage.setString(
@@ -97,7 +103,7 @@ library StorageHelper {
     address _insuredAssetAddress,
     address _liquidityProviderAddress,
     uint256 _amount
-  ) internal {
+  ) external {
     uint256 balance = _eternalStorage.getUint(
       formatAddress("insurance.pool.balance", _insuredAssetAddress)
     );
@@ -124,7 +130,7 @@ library StorageHelper {
     address _insuredAssetAddress,
     address _liquidityProviderAddress,
     uint256 _amount
-  ) internal {
+  ) external {
     uint256 balance = _eternalStorage.getUint(
       formatAddress("insurance.pool.balance", _insuredAssetAddress)
     );

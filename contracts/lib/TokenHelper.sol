@@ -55,10 +55,6 @@ library TokenHelper {
       StringHelper.toStringUint(_coverageStartBlock)
     );
 
-    console.log(liquidityTokenPartOne);
-    console.log(liquidityTokenPartTwo);
-    console.log(liquidityTokenName);
-
     liquidityToken = new InsuranceToken(
       liquidityTokenName,
       "LPAN",

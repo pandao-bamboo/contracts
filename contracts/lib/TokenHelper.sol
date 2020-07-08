@@ -4,21 +4,26 @@ pragma solidity 0.6.10;
 
 import "../tokens/InsuranceToken.sol";
 import "./StringHelper.sol";
+import "@nomiclabs/buidler/console.sol";
 
-library PoolsHelper {
+library TokenHelper {
   event TokenCreated(string _tokenName, string _tokenSymbol, address indexed _tokenAddress);
 
   /// @notice Create a claim token(CPAN)
-  /// @param _insurableAssetSymbol string Insured token symbol
-  /// @return claimsToken InsuranceToken New Claims Token
   function createClaimsToken(
-    string memory _insurableAssetSymbol,
+    address _eternalStorageAddress,
     address _insurancePoolAddress,
-    address _eternalStorageAddress
+    uint256 _coverageStartBlock,
+    string memory _insuredAssetSymbol
   ) external returns (InsuranceToken claimsToken) {
-    string memory claimsTokenName = StringHelper.concat(
+    string memory claimsTokenPartOne = StringHelper.concat(
       "PanDAO Claims Token - ",
-      _insurableAssetSymbol
+      _insuredAssetSymbol
+    );
+    string memory claimsTokenPartTwo = StringHelper.concat(claimsTokenPartOne, " - ");
+    string memory claimsTokenName = StringHelper.concat(
+      claimsTokenPartTwo,
+      StringHelper.toStringUint(_coverageStartBlock)
     );
 
     claimsToken = new InsuranceToken(
@@ -34,17 +39,25 @@ library PoolsHelper {
   }
 
   /// @notice Create a Liquidity Token(LPAN)
-  /// @param _insurableAssetSymbol string Insured token symbol
-  /// @return liquidityToken InsuranceToken New Liquidity Token
   function createLiquidityToken(
-    string memory _insurableAssetSymbol,
+    address _eternalStorageAddress,
     address _insurancePoolAddress,
-    address _eternalStorageAddress
+    uint256 _coverageStartBlock,
+    string memory _insuredAssetSymbol
   ) external returns (InsuranceToken liquidityToken) {
-    string memory liquidityTokenName = StringHelper.concat(
+    string memory liquidityTokenPartOne = StringHelper.concat(
       "PanDAO Liquidity Token - ",
-      _insurableAssetSymbol
+      _insuredAssetSymbol
     );
+    string memory liquidityTokenPartTwo = StringHelper.concat(liquidityTokenPartOne, " - ");
+    string memory liquidityTokenName = StringHelper.concat(
+      liquidityTokenPartTwo,
+      StringHelper.toStringUint(_coverageStartBlock)
+    );
+
+    console.log(liquidityTokenPartOne);
+    console.log(liquidityTokenPartTwo);
+    console.log(liquidityTokenName);
 
     liquidityToken = new InsuranceToken(
       liquidityTokenName,

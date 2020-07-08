@@ -2,7 +2,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy, log } = deployments;
   const { agent } = await getNamedAccounts();
 
-  const PoolsHelperDeployment = await deployments.get("PoolsHelper");
+  const TokenHelperDeployment = await deployments.get("TokenHelper");
   const StringHelperDeployment = await deployments.get("StringHelper");
   const StorageHelperDeployment = await deployments.get("StorageHelper");
 
@@ -10,7 +10,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     from: agent,
     args: [],
     libraries: {
-      PoolsHelper: PoolsHelperDeployment.address,
+      TokenHelper: TokenHelperDeployment.address,
       StorageHelper: StorageHelperDeployment.address,
       StringHelper: StringHelperDeployment.address,
     },

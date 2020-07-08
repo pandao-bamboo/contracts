@@ -4,96 +4,109 @@ pragma solidity 0.6.10;
 
 import "../EternalStorage.sol";
 import "./StringHelper.sol";
+import "./TokenFactoryHelper.sol";
+import "@nomiclabs/buidler/console.sol";
 
 library StorageHelper {
   /// @notice Initialized a new contract in EternalStorage
-  /// @param _eternalStorage EternalStorage storage contract instance
-  /// @param _contractAddress address Contract address to be initialized
-  /// @param _contractOwnerAddress address Contract/Wallet address of owner(msg.sender)
-  /// @param _contractName string Usually the insurableAssetSymbol
-  function initializeInsurancePool(
-    EternalStorage _eternalStorage,
-    address _contractAddress,
+  function registerInsurancePool(
+    address _insurancePoolAddress,
     address _contractOwnerAddress,
-    string memory _contractName,
-    address _insuredAssetAddress
+    address _insuredAssetAddress,
+    uint256 _insureeFeeRate,
+    uint256 _serviceFeeRate,
+    uint256 _coverageStartBlock,
+    uint256 _coverageDuration,
+    EternalStorage _eternalStorage
   ) external returns (bool) {
-    /// @dev initialize contract in EternalStorage
+    /// Global Contract Registration
     _eternalStorage.setAddress(
-      formatAddress("contract.owner", _contractAddress),
+      formatAddress("contract.owner", _insurancePoolAddress),
       _contractOwnerAddress
     );
-    _eternalStorage.setAddress(formatString("contract.name", _contractName), _contractAddress);
     _eternalStorage.setAddress(
-      formatAddress("contract.address", _contractAddress),
-      _contractAddress
+      formatAddress("contract.address", _insurancePoolAddress),
+      _insurancePoolAddress
     );
 
-    /// @dev Initialize insurance pool Pool in EternalStorage
-    _eternalStorage.setString(
-      formatAddress("insurance.pool.name", _insuredAssetAddress),
-      _contractName
+    /// Pool Contract Registration
+    uint256 insurancePoolRegistryCounter = _eternalStorage.getUint(
+      formatAddress("insurance.pool.registry.counter", _insuredAssetAddress)
     );
-    _eternalStorage.setAddress(
-      formatAddress("insurance.pool.address", _insuredAssetAddress),
-      _contractAddress
+    uint256 registryIndex = SafeMath.add(insurancePoolRegistryCounter, 1);
+    _eternalStorage.setUint(
+      formatAddress("insurance.pool.registry.counter", _insuredAssetAddress),
+      registryIndex
+    );
+    bytes32 insurancePoolRegistryLocation = formatAddress(
+      StringHelper.concat("insurance.pool.registry.", StringHelper.toStringUint(registryIndex)),
+      _insuredAssetAddress
+    );
+
+    _eternalStorage.setAddress(insurancePoolRegistryLocation, _insurancePoolAddress);
+
+    address[2] memory tokens = TokenFactoryHelper.createTokens(
+      _insurancePoolAddress,
+      _coverageStartBlock,
+      _eternalStorage
+    );
+
+    storeInsurancePoolConfiguration(
+      _insurancePoolAddress,
+      _insuredAssetAddress,
+      _insureeFeeRate,
+      _serviceFeeRate,
+      _coverageStartBlock,
+      _coverageDuration,
+      tokens,
+      _eternalStorage
     );
 
     return true;
   }
 
-  /// @notice Saves Insurance Pool Data to EternalStorage
-  /// @param _eternalStorage EternalStorage storage contract instance
-  /// @param _insurancePoolAddress address Insurance pool address
-  /// @param _liquidityTokenAddress address Liquidity Token address
-  /// @param _claimsTokenAddress address Claims token address
-  /// @param _insuredAssetAddress address Insured asset address
-  /// @param _insuredAssetSymbol string Token symbol
-  /// @param _insureeFeeRate uint256 Rate insurance buyer pays
-  /// @param _serviceFeeRate uint256 Rate paid to the DAO
-  /// @dev insureeFeeRate - serviceFeeRate = Liquidity Provider Earnings
-  function saveInsurancePool(
-    EternalStorage _eternalStorage,
+  function storeInsurancePoolConfiguration(
     address _insurancePoolAddress,
-    address _liquidityTokenAddress,
-    address _claimsTokenAddress,
     address _insuredAssetAddress,
-    string memory _insuredAssetSymbol,
     uint256 _insureeFeeRate,
-    uint256 _serviceFeeRate
-  ) external {
-    /// @dev Saves IPool to EternalStorage
+    uint256 _serviceFeeRate,
+    uint256 _coverageStartBlock,
+    uint256 _coverageDuration,
+    address[2] memory _tokens,
+    EternalStorage _eternalStorage
+  ) internal returns (bool) {
+    /// Insurance Pool Configuration Data
     _eternalStorage.setAddress(
-      formatAddress("insurance.pool.liquidityToken", _insuredAssetAddress),
-      _liquidityTokenAddress
+      formatAddress("insurance.pool.liquidityToken", _insurancePoolAddress),
+      _tokens[0]
     );
     _eternalStorage.setAddress(
-      formatAddress("insurance.pool.claimsToken", _insuredAssetAddress),
-      _claimsTokenAddress
+      formatAddress("insurance.pool.claimsToken", _insurancePoolAddress),
+      _tokens[1]
     );
     _eternalStorage.setAddress(
-      formatAddress("insurance.pool.address", _insuredAssetAddress),
+      formatAddress("insurance.pool.address", _insurancePoolAddress),
       _insurancePoolAddress
-    );
-    _eternalStorage.setAddress(
-      formatAddress("insurance.pool.insuredAsset", _insuredAssetAddress),
-      _insuredAssetAddress
     );
     _eternalStorage.setAddress(
       formatAddress("insurance.pool.insuredAsset", _insurancePoolAddress),
       _insuredAssetAddress
     );
-    _eternalStorage.setString(
-      formatAddress("insurance.pool.insuredAssetSymbol", _insuredAssetAddress),
-      _insuredAssetSymbol
-    );
     _eternalStorage.setUint(
-      formatAddress("insurance.pool.insureeFeeRate", _insuredAssetAddress),
+      formatAddress("insurance.pool.insureeFeeRate", _insurancePoolAddress),
       _insureeFeeRate
     );
     _eternalStorage.setUint(
-      formatAddress("insurance.pool.serviceFeeRate", _insuredAssetAddress),
+      formatAddress("insurance.pool.serviceFeeRate", _insurancePoolAddress),
       _serviceFeeRate
+    );
+    _eternalStorage.setUint(
+      formatAddress("insurance.pool.coverageStartBlock", _insurancePoolAddress),
+      _coverageStartBlock
+    );
+    _eternalStorage.setUint(
+      formatAddress("insurance.pool.coverageDuration", _insurancePoolAddress),
+      _coverageDuration
     );
   }
 
@@ -123,6 +136,25 @@ library StorageHelper {
     uint256 userBalance = _eternalStorage.getUint(userBalanceLocation);
     uint256 updatedUserBalance = userBalance + _amount;
     _eternalStorage.setUint(userBalanceLocation, updatedUserBalance);
+  }
+
+  function getInsurancePoolAddress(address _insuredAssetAddress, address _eternalStorageAddress)
+    external
+    view
+    returns (address insurancePoolAddress)
+  {
+    EternalStorage eternalStorage = EternalStorage(_eternalStorageAddress);
+    uint256 registryIndexPosition = eternalStorage.getUint(
+      formatAddress("insurance.pool.registry.counter", _insuredAssetAddress)
+    );
+
+    insurancePoolAddress = getInsurancePoolAddressByIndex(
+      _insuredAssetAddress,
+      registryIndexPosition,
+      eternalStorage
+    );
+
+    return insurancePoolAddress;
   }
 
   function removeLiquidity(
@@ -192,5 +224,23 @@ library StorageHelper {
   // Getter Format
   function formatGet(string memory _location) internal pure returns (bytes32) {
     return keccak256(abi.encode(_location));
+  }
+
+  function getInsurancePoolAddressByIndex(
+    address _insuredAssetAddress,
+    uint256 _registryIndexPosition,
+    EternalStorage _eternalStorage
+  ) internal view returns (address insurancePoolAddress) {
+    bytes32 insurancePoolRegistryLocation = formatAddress(
+      StringHelper.concat(
+        "insurance.pool.registry.",
+        StringHelper.toStringUint(_registryIndexPosition)
+      ),
+      _insuredAssetAddress
+    );
+
+    insurancePoolAddress = _eternalStorage.getAddress(insurancePoolRegistryLocation);
+
+    return insurancePoolAddress;
   }
 }

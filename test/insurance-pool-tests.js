@@ -34,7 +34,7 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
 
     EternalStorage = await deployments.get("EternalStorage");
     StorageHelper = await deployments.get("StorageHelper");
-    PoolsHelper = await deployments.get("PoolsHelper");
+    TokenHelper = await deployments.get("TokenHelper");
     StringHelper = await deployments.get("StringHelper");
     eternalStorage = new ethers.Contract(EternalStorage.address, EternalStorage.abi, agent);
 
@@ -46,7 +46,7 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
       from: agent._address,
       args: [mockToken.address, "BTC++", 5, 2, EternalStorage.address],
       libraries: {
-        PoolsHelper: PoolsHelper.address,
+        TokenHelper: TokenHelper.address,
         StorageHelper: StorageHelper.address,
         StringHelper: StringHelper.address,
       },

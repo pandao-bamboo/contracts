@@ -7,17 +7,21 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
   const stringHelper = await deploy("StringHelper", {
     from: agent,
-    args: [],
+  });
+
+  const tokenFactoryHelper = await deploy("TokenFactoryHelper", {
+    from: agent,
   });
 
   const storageHelper = await deploy("StorageHelper", {
     from: agent,
     libraries: {
       StringHelper: stringHelper.address,
+      TokenFactoryHelper: tokenFactoryHelper.address,
     },
   });
 
-  const poolsHelper = await deploy("PoolsHelper", {
+  const tokenHelper = await deploy("TokenHelper", {
     from: agent,
     libraries: {
       StringHelper: stringHelper.address,
@@ -25,8 +29,14 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     },
   });
 
-  if (poolsHelper.newlyDeployed && storageHelper.newlyDeployed && stringHelper.newlyDeployed) {
-    log(`##### PanDAO: PoolsHelper has been deployed: ${poolsHelper.address}`);
+  if (
+    tokenHelper.newlyDeployed &&
+    storageHelper.newlyDeployed &&
+    stringHelper.newlyDeployed &&
+    tokenFactoryHelper.newlyDeployed
+  ) {
+    log(`##### PanDAO: TokenFactoryHelper has been deployed: ${tokenFactoryHelper.address}`);
+    log(`##### PanDAO: TokenHelper has been deployed: ${tokenHelper.address}`);
     log(`##### PanDAO: StorageHelper has been deployed: ${storageHelper.address}`);
     log(`##### PanDAO: StringHelper has been deployed: ${stringHelper.address}`);
   }

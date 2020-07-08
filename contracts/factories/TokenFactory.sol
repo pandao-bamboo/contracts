@@ -3,7 +3,8 @@
 pragma solidity 0.6.10;
 
 import "../lib/StorageHelper.sol";
-import "../lib/PoolsHelper.sol";
+import "../lib/TokenHelper.sol";
+import "@nomiclabs/buidler/console.sol";
 
 contract TokenFactory {
   address internal eternalStorageAddress;
@@ -12,23 +13,26 @@ contract TokenFactory {
     eternalStorageAddress = _eternalStorageAddress;
   }
 
-  function createTokens(string memory _insurableAssetSymbol, address _insurancePoolAddress)
-    external
-    returns (address[2] memory tokens)
-  {
+  function createTokens(
+    address _insurancePoolAddress,
+    uint256 _coverageStartBlock,
+    string memory _insuredAssetSymbol
+  ) external returns (address[2] memory tokens) {
     tokens = [
       address(
-        PoolsHelper.createLiquidityToken(
-          _insurableAssetSymbol,
+        TokenHelper.createLiquidityToken(
+          eternalStorageAddress,
           _insurancePoolAddress,
-          eternalStorageAddress
+          _coverageStartBlock,
+          _insuredAssetSymbol
         )
       ),
       address(
-        PoolsHelper.createClaimsToken(
-          _insurableAssetSymbol,
+        TokenHelper.createClaimsToken(
+          eternalStorageAddress,
           _insurancePoolAddress,
-          eternalStorageAddress
+          _coverageStartBlock,
+          _insuredAssetSymbol
         )
       )
     ];

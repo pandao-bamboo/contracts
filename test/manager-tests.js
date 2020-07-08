@@ -21,6 +21,7 @@ describe("PanDAO Contract Network: Manager Contract", () => {
 
   const nullRecord = "0x0000000000000000000000000000000000000000";
   const coverageDuration = 172800;
+  let currentBlockNumber;
 
   beforeEach(async () => {
     [agent, address1, address2] = await bre.getSigners();
@@ -43,6 +44,8 @@ describe("PanDAO Contract Network: Manager Contract", () => {
     MockToken = await bre.getContractFactory("Token");
     mockToken = await MockToken.deploy();
     await mockToken.deployed();
+
+    currentBlockNumber = await bre.provider.getBlockNumber();
   });
 
   it("Manager is stored in EternalStorage", async () => {
@@ -69,9 +72,7 @@ describe("PanDAO Contract Network: Manager Contract", () => {
     ).to.equal(await agent.getAddress());
   });
 
-  it.only("Can create an Insurance Pool", async () => {
-    const currentBlockNumber = await bre.provider.getBlockNumber();
-
+  it("Can create an Insurance Pool", async () => {
     const ip = await manager.functions.createInsurancePool(
       mockToken.address,
       mockToken.symbol(),
@@ -98,9 +99,15 @@ describe("PanDAO Contract Network: Manager Contract", () => {
 
   it("Fails to create an Insurance Pool if not Agent", async () => {
     notAgentSigner = new ethers.Contract(Manager.address, Manager.abi, address1);
-
     await expect(
-      notAgentSigner.functions.createInsurancePool(mockToken.address, "BTC++", 5, 2)
+      notAgentSigner.functions.createInsurancePool(
+        mockToken.address,
+        mockToken.symbol(),
+        5,
+        2,
+        currentBlockNumber,
+        coverageDuration
+      )
     ).to.be.revertedWith("PanDAO: UnAuthorized - Agent only");
   });
 });

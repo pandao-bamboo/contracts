@@ -33,13 +33,17 @@ library StorageHelper {
     uint256 insurancePoolRegistryCounter = _eternalStorage.getUint(
       formatAddress("insurance.pool.registry.counter", _insuredAssetAddress)
     );
-    uint256 registryIndex = SafeMath.add(insurancePoolRegistryCounter, 1);
+    uint256 registryIndexCount = SafeMath.add(insurancePoolRegistryCounter, 1);
+
     _eternalStorage.setUint(
       formatAddress("insurance.pool.registry.counter", _insuredAssetAddress),
-      registryIndex
+      registryIndexCount
     );
     bytes32 insurancePoolRegistryLocation = formatAddress(
-      StringHelper.concat("insurance.pool.registry.", StringHelper.toStringUint(registryIndex)),
+      StringHelper.concat(
+        "insurance.pool.registry.",
+        StringHelper.toStringUint(registryIndexCount)
+      ),
       _insuredAssetAddress
     );
 
@@ -110,19 +114,23 @@ library StorageHelper {
     );
   }
 
-  /// @notice Update the Insurance Pool liquidity and an existing or new liquidity provider adds liquidity
+  /// @notice Add new liquidity to Insurance Pool
+  /// @param _liquidityProviderAddress address
+  /// @param _insurancePoolAddress address
+  /// @param _amount uint256
   function addLiquidity(
     EternalStorage _eternalStorage,
-    address _insuredAssetAddress,
     address _liquidityProviderAddress,
+    address _insurancePoolAddress,
     uint256 _amount
   ) external {
     uint256 balance = _eternalStorage.getUint(
-      formatAddress("insurance.pool.balance", _insuredAssetAddress)
+      formatAddress("insurance.pool.balance", _insurancePoolAddress)
     );
-    uint256 updatedBalance = balance + _amount;
+    uint256 updatedBalance = SafeMath.add(balance, _amount);
+
     _eternalStorage.setUint(
-      formatAddress("insurance.pool.balance", _insuredAssetAddress),
+      formatAddress("insurance.pool.balance", _insurancePoolAddress),
       updatedBalance
     );
 
@@ -131,10 +139,10 @@ library StorageHelper {
         "insurance.pool.userBalance",
         StringHelper.toString(_liquidityProviderAddress)
       ),
-      _insuredAssetAddress
+      _insurancePoolAddress
     );
     uint256 userBalance = _eternalStorage.getUint(userBalanceLocation);
-    uint256 updatedUserBalance = userBalance + _amount;
+    uint256 updatedUserBalance = SafeMath.add(userBalance, _amount);
     _eternalStorage.setUint(userBalanceLocation, updatedUserBalance);
   }
 
@@ -157,18 +165,22 @@ library StorageHelper {
     return insurancePoolAddress;
   }
 
+  /// @notice removes liquidity from Insurance pool
+  /// @param _liquidityProviderAddress address
+  /// @param _insurancePoolAddress address
+  /// @param _amount uint256
   function removeLiquidity(
     EternalStorage _eternalStorage,
-    address _insuredAssetAddress,
     address _liquidityProviderAddress,
+    address _insurancePoolAddress,
     uint256 _amount
   ) external {
     uint256 balance = _eternalStorage.getUint(
-      formatAddress("insurance.pool.balance", _insuredAssetAddress)
+      formatAddress("insurance.pool.balance", _insurancePoolAddress)
     );
-    uint256 updatedBalance = balance - _amount;
+    uint256 updatedBalance = SafeMath.sub(balance, _amount);
     _eternalStorage.setUint(
-      formatAddress("insurance.pool.balance", _insuredAssetAddress),
+      formatAddress("insurance.pool.balance", _insurancePoolAddress),
       updatedBalance
     );
 
@@ -177,10 +189,10 @@ library StorageHelper {
         "insurance.pool.userBalance",
         StringHelper.toString(_liquidityProviderAddress)
       ),
-      _insuredAssetAddress
+      _insurancePoolAddress
     );
     uint256 userBalance = _eternalStorage.getUint(userBalanceLocation);
-    uint256 updatedUserBalance = userBalance - _amount;
+    uint256 updatedUserBalance = SafeMath.sub(userBalance, _amount);
     _eternalStorage.setUint(userBalanceLocation, updatedUserBalance);
   }
 

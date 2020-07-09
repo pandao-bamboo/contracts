@@ -19,8 +19,7 @@ describe("PanDAO Contract Network: Manager Contract", () => {
   let address1;
   let address2;
 
-  const nullRecord = "0x0000000000000000000000000000000000000000";
-  const coverageDuration = 172800;
+  let coverageDuration = 172800;
   let currentBlockNumber;
 
   beforeEach(async () => {

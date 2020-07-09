@@ -8,6 +8,7 @@ import "./lib/StorageHelper.sol";
 import "./lib/StringHelper.sol";
 import "./tokens/InsuranceToken.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@nomiclabs/buidler/console.sol";
 
 /// @author PanDAO - https://pandao.org
 /// @title PanDAO Insurance Pool
@@ -83,104 +84,82 @@ contract InsurancePool {
   }
 
   /// @notice Adds liquidity for matching to the Insurance Pool
-  /// @param _liquidityProviderAddress Address for the liquidity provider
   /// @param _amount Amount of liquidity to be added to the queue
-  function addLiquidity(address _liquidityProviderAddress, uint256 _amount) public payable {
+  function addLiquidity(uint256 _amount) public payable {
     address insuredAssetAddress = eternalStorage.getAddress(
       StorageHelper.formatAddress("insurance.pool.insuredAsset", address(this))
     );
     address liquidityTokenAddress = eternalStorage.getAddress(
-      StorageHelper.formatAddress("insurance.pool.liquidityToken", insuredAssetAddress)
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
     ERC20 insuredAsset = ERC20(insuredAssetAddress);
-    insuredAsset.transferFrom(_liquidityProviderAddress, address(this), _amount);
+    insuredAsset.transferFrom(msg.sender, address(this), _amount);
 
     InsuranceToken liquidityToken = InsuranceToken(liquidityTokenAddress);
-    liquidityToken.mint(_liquidityProviderAddress, _amount);
-    liquidityToken.approve(_liquidityProviderAddress, address(this), _amount);
+    liquidityToken.mint(msg.sender, _amount);
+    liquidityToken.approve(msg.sender, address(this), _amount);
 
-    StorageHelper.addLiquidity(
-      eternalStorage,
-      insuredAssetAddress,
-      _liquidityProviderAddress,
-      _amount
-    );
+    StorageHelper.addLiquidity(eternalStorage, msg.sender, address(this), _amount);
 
-    emit liquidityAddedToPool(
-      address(this),
-      insuredAssetAddress,
-      _liquidityProviderAddress,
-      _amount
-    );
+    emit liquidityAddedToPool(address(this), insuredAssetAddress, msg.sender, _amount);
   }
 
-  function buyInsurance(uint256 _amount, uint8 _termLengthInMonths) public {
+  function buyInsurance(
+    uint256 _amount,
+    address _insureeAddress,
+    uint8 _termLengthInMonths
+  ) public {
     address insuredAssetAddress = eternalStorage.getAddress(
       StorageHelper.formatAddress("insurance.pool.insuredAsset", address(this))
     );
     address claimsTokenAddress = eternalStorage.getAddress(
-      StorageHelper.formatAddress("insurance.pool.claimsToken", insuredAssetAddress)
+      StorageHelper.formatAddress("insurance.pool.claimsToken", address(this))
     );
     address daoFinance = eternalStorage.getAddress(StorageHelper.formatGet("dao.finance"));
 
-    uint256 insureeFee = SafeMath.div(
-      eternalStorage.getUint(
-        StorageHelper.formatAddress("insurance.pool.insureeFee", insuredAssetAddress)
-      ),
-      100
+    uint256 insureeFee = eternalStorage.getUint(
+      StorageHelper.formatAddress("insurance.pool.insureeFeeRate", address(this))
     );
-    uint256 serviceFee = SafeMath.div(
-      eternalStorage.getUint(
-        StorageHelper.formatAddress("insurance.pool.serviceFee", insuredAssetAddress)
-      ),
-      100
+
+    uint256 serviceFee = eternalStorage.getUint(
+      StorageHelper.formatAddress("insurance.pool.serviceFeeRate", address(this))
     );
+
     uint256 totalPremiumAmount = SafeMath.mul(_amount, insureeFee);
-    uint256 daoFee = SafeMath.mul(totalPremiumAmount, serviceFee);
+    uint256 daoFee = SafeMath.mul(totalPremiumAmount, serviceFee / 100);
 
     ERC20 insuredAsset = ERC20(insuredAssetAddress);
-    insuredAsset.approve(address(this), totalPremiumAmount);
-    insuredAsset.transferFrom(msg.sender, address(this), totalPremiumAmount);
+    insuredAsset.transferFrom(_insureeAddress, address(this), totalPremiumAmount);
     insuredAsset.transfer(daoFinance, daoFee);
 
     InsuranceToken claimsToken = InsuranceToken(claimsTokenAddress);
-    claimsToken.mint(msg.sender, _amount);
-    claimsToken.approve(msg.sender, address(this), _amount);
+    claimsToken.mint(_insureeAddress, _amount);
+    claimsToken.approve(_insureeAddress, address(this), _amount);
   }
 
   function payPremium() public {}
 
   function createClaim() public {}
 
-  function removeLiquidity(address _liquidityProviderAddress, uint256 _amount) public payable {
+  function removeLiquidity(uint256 _amount) public payable {
     address insuredAssetAddress = eternalStorage.getAddress(
       StorageHelper.formatAddress("insurance.pool.insuredAsset", address(this))
     );
     address liquidityTokenAddress = eternalStorage.getAddress(
-      StorageHelper.formatAddress("insurance.pool.liquidityToken", insuredAssetAddress)
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
     ERC20 insuredAsset = ERC20(insuredAssetAddress);
-    insuredAsset.transfer(_liquidityProviderAddress, _amount);
+    insuredAsset.transfer(msg.sender, _amount);
 
     InsuranceToken liquidityToken = InsuranceToken(liquidityTokenAddress);
-    liquidityToken.transferFrom(_liquidityProviderAddress, address(this), _amount);
+    liquidityToken.transferFrom(msg.sender, address(this), _amount);
     liquidityToken.burn(_amount);
 
-    StorageHelper.removeLiquidity(
-      eternalStorage,
-      insuredAssetAddress,
-      _liquidityProviderAddress,
-      _amount
-    );
+    StorageHelper.removeLiquidity(eternalStorage, msg.sender, address(this), _amount);
 
-    emit liquidityRemovedFromPool(
-      address(this),
-      insuredAssetAddress,
-      _liquidityProviderAddress,
-      _amount
-    );
+    emit liquidityRemovedFromPool(address(this), insuredAssetAddress, msg.sender, _amount);
   }
 
   function settlement() public {}

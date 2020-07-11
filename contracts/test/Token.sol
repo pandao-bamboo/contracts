@@ -22,6 +22,6 @@ contract Token is ERC20 {
     // that is deploying the contract.
     owner = msg.sender;
 
-    _mint(msg.sender, 100000);
+    _mint(msg.sender, 1000 ether);
   }
 }

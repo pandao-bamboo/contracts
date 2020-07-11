@@ -5,7 +5,6 @@ pragma solidity 0.6.10;
 import "../EternalStorage.sol";
 import "./StringHelper.sol";
 import "./TokenFactoryHelper.sol";
-import "@nomiclabs/buidler/console.sol";
 
 library StorageHelper {
   /// @notice Initialized a new contract in EternalStorage

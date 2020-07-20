@@ -18,7 +18,7 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
   let mockToken;
 
   let agent;
-  let testAmount = 5.0;
+  let testAmount = 5000000000;
 
   let coverageDuration = 172800;
   let currentBlockNumber;
@@ -99,7 +99,7 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
     expect(await mockToken.functions.balanceOf(InsurancePool.address)).to.equal(0);
   });
 
-  it.only(`Should buy insurance for the Insuree`, async () => {
+  it(`Should buy insurance for the Insuree`, async () => {
     const claimsTokenAddress = await eternalStorage.functions.getAddress(
       storageFormat(["string", "address"], ["insurance.pool.claimsToken", InsurancePool.address])
     );
@@ -111,16 +111,16 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
       storageFormat(["string", "address"], ["insurance.pool.serviceFeeRate", InsurancePool.address])
     );
 
-    const premiumAmount = testAmount * insureeFee;
-    const doaFee = premiumAmount * serviceFee;
+    const premiumAmount = (testAmount * insureeFee) / 100;
+    const doaFee = (premiumAmount * serviceFee) / 100;
 
     await mockToken.approve(InsurancePool.address, premiumAmount);
     await ip.functions.buyInsurance(testAmount, agent._address, 12);
 
     const poolAssetAmount = await mockToken.balanceOf(InsurancePool.address);
-    console.log("poolAssetAmount", poolAssetAmount);
+    console.log("poolAssetAmount", poolAssetAmount.toString());
 
     expect(await claimsToken.functions.balanceOf(agent._address)).to.equal(testAmount);
-    expect(poolAssetAmount).to.equal(premiumAmount);
+    expect(poolAssetAmount).to.equal(premiumAmount - doaFee);
   });
 });

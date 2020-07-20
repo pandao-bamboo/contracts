@@ -169,6 +169,7 @@ describe("PanDAO Contract Network: Insurance Pool Contract - Automated monthly p
     const claimsToken = new ethers.Contract(claimsTokenAddress, InsuranceToken.abi, agent);
 
     let monthlyPayments = 0;
+    let newTime = new Date().getTime();
     while (monthlyPayments < 11) {
       const filteredLogs = await bre.provider.getLogs(filter);
 
@@ -192,11 +193,9 @@ describe("PanDAO Contract Network: Insurance Pool Contract - Automated monthly p
           .exec(taskReceiptAsObj, { gasLimit: 4000000, gasPrice: currentGasPrice })
       ).to.emit(gelatoCore, "LogCanExecFailed");
 
-      // console.log(fastForwardTime);
-      let newTime = new Date().getTime();
       for (let i = 0; i < coverageDuration; i++) {
-        await bre.provider.send("evm_mine", [new Date().getTime()]);
-        newTime + 100;
+        await bre.provider.send("evm_mine", [newTime]);
+        newTime = newTime + 1000;
       }
 
       canExecResult = await gelatoCore
@@ -308,11 +307,10 @@ describe("PanDAO Contract Network: Insurance Pool Contract - Automated monthly p
         .exec(taskReceiptAsObj, { gasLimit: 4000000, gasPrice: currentGasPrice })
     ).to.emit(gelatoCore, "LogCanExecFailed");
 
-    // console.log(fastForwardTime);
     let newTime = new Date().getTime();
     for (let i = 0; i < coverageDuration; i++) {
-      await bre.provider.send("evm_mine", [new Date().getTime()]);
-      newTime + 100;
+      await bre.provider.send("evm_mine", [newTime]);
+      newTime = newTime + 1000;
     }
 
     canExecResult = await gelatoCore

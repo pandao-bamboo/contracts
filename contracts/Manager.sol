@@ -1,6 +1,7 @@
+// SPDX-License-Identifier: GPLv3
+
 pragma solidity 0.6.10;
 
-import "@nomiclabs/buidler/console.sol";
 import "@pie-dao/proxy/contracts/PProxyPausable.sol";
 
 // Imports
@@ -55,7 +56,9 @@ contract Manager {
     address _insuredAssetAddress,
     string memory _insuredAssetSymbol,
     uint256 _insureeFeeRate,
-    uint256 _serviceFeeRate
+    uint256 _serviceFeeRate,
+    uint256 _coverageStartBlock,
+    uint256 _coverageDuration
   ) public onlyAgent() {
     require(
       eternalStorage.getAddress(
@@ -69,13 +72,15 @@ contract Manager {
       _insuredAssetSymbol,
       _insureeFeeRate,
       _serviceFeeRate,
+      _coverageStartBlock,
+      _coverageDuration,
       eternalStorageAddress
     );
 
-    PProxyPausable proxy = new PProxyPausable();
-    proxy.setImplementation(address(insurancePool));
-    proxy.setPauzer(address(this));
-    proxy.setProxyOwner(address(this));
+    // PProxyPausable proxy = new PProxyPausable();
+    // proxy.setImplementation(address(insurancePool));
+    // proxy.setPauzer(address(this));
+    // proxy.setProxyOwner(address(this));
 
     emit InsurancePoolCreated(address(insurancePool), _insuredAssetSymbol);
   }

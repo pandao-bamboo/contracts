@@ -4,7 +4,7 @@ const storageFormat = require("../test/utils/deployment").storageFormat;
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
   const { log } = deployments;
-  const { agent } = await getNamedAccounts();
+  const { agent, finance } = await getNamedAccounts();
   const nullRecord = "0x0000000000000000000000000000000000000000";
 
   // Storage
@@ -20,14 +20,23 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const Manager = await deployments.get("Manager");
   const TokenFactory = await deployments.get("TokenFactory");
 
+  // Gelato Contracts
+  const GelatoCore = await deployments.get("GelatoCore");
+  const PanDaoProviderModule = await deployments.get("PanDaoProviderModule");
+  const GelatoManager = await deployments.get("GelatoManager");
+  const ConditionBlockNumber = await deployments.get("ConditionBlockNumber");
+
   // Initialize Contracts
   log(`##### PanDAO: Initializing Contracts`);
   const daoAgentLocation = storageFormat(["string"], ["dao.agent"]);
   const daoAgent = await getAddress(daoAgentLocation);
 
+  const daoFinanceLocation = storageFormat(["string"], ["dao.finance"]);
+
   // Setup DAO Agent
   if (daoAgent == nullRecord) {
     await setAddress(daoAgentLocation, agent);
+    await setAddress(daoFinanceLocation, finance);
     log(`##### PanDAO(Storage): Agent Initialized - (Loc:${daoAgentLocation} / agent: ${agent})`);
   } else {
     log(`##### PanDAO: Agent already initialized`);
@@ -63,6 +72,23 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   );
   log(`##### PanDAO(Storage): TokenFactory Initialized - (Contract: ${TokenFactory.address})`);
 
+  // Initialize Gelato Core, Gelato Manager & PanDaoProviderModule
+  await setAddress(storageFormat(["string"], ["gelato.core"]), GelatoCore.address);
+  await setAddress(
+    storageFormat(["string"], ["gelato.providermodule"]),
+    PanDaoProviderModule.address
+  );
+  await setAddress(storageFormat(["string"], ["gelato.manager"]), GelatoManager.address);
+  await setAddress(storageFormat(["string"], ["gelato.condition"]), ConditionBlockNumber.address);
+  log(`##### PanDAO(Storage): GelatoCore Initialized - (Contract: ${GelatoCore.address})`);
+  log(
+    `##### PanDAO(Storage): PanDaoProviderModule Initialized - (Contract: ${PanDaoProviderModule.address})`
+  );
+  log(`##### PanDAO(Storage): GelatoManager Initialized - (Contract: ${GelatoManager.address})`);
+  log(
+    `##### PanDAO(Storage): ConditionBlockNumber Initialized - (Contract: ${ConditionBlockNumber.address})`
+  );
+
   // THIS SHOULD ALWAYS BE LAST!!!!!
   // Once the storage is initialized only the
   // latest version of a contract in the network can call its functions
@@ -91,4 +117,12 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   }
 };
 
-module.exports.dependencies = ["EternalStorage", "Manager", "TokenFactory"];
+module.exports.dependencies = [
+  "EternalStorage",
+  "Manager",
+  "TokenFactory",
+  "GelatoCore",
+  "PanDaoProviderModule",
+  "GelatoManager",
+  "ConditionBlockNumber",
+];

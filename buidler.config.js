@@ -42,5 +42,14 @@ module.exports = {
     agent: {
       default: 0,
     },
+    finance: {
+      default: 2,
+    },
+    gelatoExecutor: {
+      default: 3,
+    },
+    gelatoSysAdmin: {
+      default: 4,
+    },
   },
 };

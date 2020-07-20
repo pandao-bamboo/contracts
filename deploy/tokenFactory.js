@@ -6,9 +6,18 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const { agent } = await getNamedAccounts();
 
   const EternalStorageDeployment = await deployments.get("EternalStorage");
+  const TokenHelperDeployment = await deployments.get("TokenHelper");
+  const StorageHelperDeployment = await deployments.get("StorageHelper");
+  const StringHelperDeployment = await deployments.get("StringHelper");
+
   const tokenFactory = await deploy("TokenFactory", {
     from: agent,
     args: [EternalStorageDeployment.address],
+    libraries: {
+      TokenHelper: TokenHelperDeployment.address,
+      StorageHelper: StorageHelperDeployment.address,
+      StringHelper: StringHelperDeployment.address,
+    },
   });
 
   if (tokenFactory.newlyDeployed) {
@@ -16,5 +25,6 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   }
 };
 module.exports.tags = ["TokenFactory"];
+module.exports.dependencies = ["Libraries"];
 module.exports.dependencies = ["Manager"];
 module.exports.dependencies = ["EternalStorage"];

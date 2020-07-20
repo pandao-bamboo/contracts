@@ -19,12 +19,19 @@ describe("PanDAO Contract Network: Manager Contract", () => {
   let address1;
   let address2;
 
-  const nullRecord = "0x0000000000000000000000000000000000000000";
+  let coverageDuration = 172800;
+  let currentBlockNumber;
 
   beforeEach(async () => {
     [agent, address1, address2] = await bre.getSigners();
 
     await deployments.fixture();
+
+    StorageHelper = await deployments.get("StorageHelper");
+    storageHelper = new ethers.Contract(StorageHelper.address, StorageHelper.abi, agent);
+    StringHelper = await deployments.get("StringHelper");
+    TokenHelper = await deployments.get("TokenHelper");
+    TokenFactoryHelper = await deployments.get("TokenFactoryHelper");
 
     // setup needed contracts
     Manager = await deployments.get("Manager");
@@ -36,6 +43,8 @@ describe("PanDAO Contract Network: Manager Contract", () => {
     MockToken = await bre.getContractFactory("Token");
     mockToken = await MockToken.deploy();
     await mockToken.deployed();
+
+    currentBlockNumber = await bre.provider.getBlockNumber();
   });
 
   it("Manager is stored in EternalStorage", async () => {
@@ -62,71 +71,42 @@ describe("PanDAO Contract Network: Manager Contract", () => {
     ).to.equal(await agent.getAddress());
   });
 
-  it("Can create an Insurance Pool if it doesn't exist", async () => {
-    const ip = await manager.functions.createInsurancePool(mockToken.address, "BTC++", 5, 2);
-    const insurancePoolAddress = await eternalStorage.functions.getAddress(
-      storageFormat(["string", "address"], ["insurance.pool.address", mockToken.address])
+  it("Can create an Insurance Pool", async () => {
+    const ip = await manager.functions.createInsurancePool(
+      mockToken.address,
+      mockToken.symbol(),
+      5,
+      2,
+      currentBlockNumber,
+      coverageDuration
     );
 
-    expect(ip).to.have.property("hash");
-    expect(
-      await eternalStorage.functions.getAddress(
-        storageFormat(["string", "address"], ["insurance.pool.address", mockToken.address])
-      )
-    ).to.equal(insurancePoolAddress);
-
-    expect(
-      await eternalStorage.functions.getAddress(
-        storageFormat(["string", "address"], ["insurance.pool.liquidityToken", mockToken.address])
-      )
-    )
-      .to.be.an("string")
-      .that.does.not.include(nullRecord);
-
-    expect(
-      await eternalStorage.functions.getAddress(
-        storageFormat(["string", "address"], ["insurance.pool.claimsToken", mockToken.address])
-      )
-    )
-      .to.be.an("string")
-      .that.does.not.include(nullRecord);
-
-    expect(
-      await eternalStorage.functions.getAddress(
-        storageFormat(["string", "address"], ["insurance.pool.insuredAsset", mockToken.address])
-      )
-    ).to.equal(mockToken.address);
+    const insurancePoolAddress = await storageHelper.functions.getInsurancePoolAddress(
+      mockToken.address,
+      EternalStorage.address
+    );
 
     expect(
       await eternalStorage.functions.getUint(
-        storageFormat(["string", "address"], ["insurance.pool.insureeFeeRate", mockToken.address])
+        storageFormat(
+          ["string", "address"],
+          ["insurance.pool.insureeFeeRate", insurancePoolAddress]
+        )
       )
     ).to.equal(5);
-
-    expect(
-      await eternalStorage.functions.getUint(
-        storageFormat(["string", "address"], ["insurance.pool.serviceFeeRate", mockToken.address])
-      )
-    ).to.equal(2);
-  });
-
-  it("Fails to create Insurance Pool if it already exists", async () => {
-    const originalPool = await manager.functions.createInsurancePool(
-      mockToken.address,
-      "BTC++",
-      5,
-      2
-    );
-    const duplicatePool = await expect(
-      manager.functions.createInsurancePool(mockToken.address, "BTC++", 5, 2)
-    ).to.be.revertedWith("PanDAO: Insurance Pool already exists for that asset");
   });
 
   it("Fails to create an Insurance Pool if not Agent", async () => {
     notAgentSigner = new ethers.Contract(Manager.address, Manager.abi, address1);
-
     await expect(
-      notAgentSigner.functions.createInsurancePool(mockToken.address, "BTC++", 5, 2)
+      notAgentSigner.functions.createInsurancePool(
+        mockToken.address,
+        mockToken.symbol(),
+        5,
+        2,
+        currentBlockNumber,
+        coverageDuration
+      )
     ).to.be.revertedWith("PanDAO: UnAuthorized - Agent only");
   });
 });

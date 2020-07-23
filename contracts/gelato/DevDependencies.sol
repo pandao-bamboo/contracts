@@ -8,6 +8,8 @@ pragma solidity ^0.6.10;
 //  For other environments, only use compiled contracts from the NPM package.
 import {GelatoCore} from "@gelatonetwork/core/contracts/gelato_core/GelatoCore.sol";
 import {GelatoManager} from "@gelatonetwork/core/contracts/helpers/GelatoManager.sol";
-import {GelatoGasPriceOracle} from "@gelatonetwork/core/contracts/gelato_core/GelatoGasPriceOracle.sol";
+import {
+  GelatoGasPriceOracle
+} from "@gelatonetwork/core/contracts/gelato_core/GelatoGasPriceOracle.sol";
 
 contract DevDependencies {}

@@ -21,7 +21,7 @@ module.exports = {
     buidlerevm: {
       gasPrice: 0,
       blockGasLimit: 100000000,
-      allowUnlimitedContractSize: false,
+      allowUnlimitedContractSize: true,
     },
     coverage: {
       url: "http://127.0.0.1:8555", // Coverage launches its own ganache-cli client

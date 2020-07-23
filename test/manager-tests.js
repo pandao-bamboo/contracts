@@ -134,7 +134,7 @@ describe("PanDAO Contract Network: Manager Contract", () => {
       )
     ).to.equal(5);
 
-    manager.functions.setInsureeFee(insurancePoolAddress, 3);
+    await manager.functions.setInsureeFee(insurancePoolAddress, 3);
 
     expect(
       await eternalStorage.functions.getUint(
@@ -168,9 +168,9 @@ describe("PanDAO Contract Network: Manager Contract", () => {
           ["insurance.pool.serviceFeeRate", insurancePoolAddress]
         )
       )
-    ).to.equal(5);
+    ).to.equal(2);
 
-    manager.functions.setInsureeFee(insurancePoolAddress, 3);
+    await manager.functions.setServiceFee(insurancePoolAddress, 3);
 
     expect(
       await eternalStorage.functions.getUint(

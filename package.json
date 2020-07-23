@@ -31,15 +31,15 @@
     "chai": "^4.2.0",
     "ethereum-waffle": "^2.3.2",
     "ethers": "^4.0.44",
+    "lodash": "^4.17.19",
     "mocha": "^7.1.2",
-    "prettier": "^2.0.5",
-    "lodash": "^4.17.19"
+    "prettier": "^2.0.5"
   },
   "directories": {
     "test": "test"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^3.0.1",
+    "@openzeppelin/contracts": "^3.1.0",
     "@pie-dao/proxy": "^0.0.6",
     "dotenv": "^8.2.0",
     "scrypt": "^6.0.3",

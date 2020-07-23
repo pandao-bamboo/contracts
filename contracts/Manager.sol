@@ -96,14 +96,14 @@ contract Manager {
 
   function pausePool() public onlyAgent() {}
 
-  // function setInsureeFee(address _insurancePoolAddress, uint256 _insureeFee) public onlyAgent() {
-  //   eternalStorage.setUint(
-  //     StorageHelper.formatAddress("insurance.pool.insureeFeeRate", _insurancePoolAddress),
-  //     _insureeFee
-  //   );
+  function setInsureeFee(address _insurancePoolAddress, uint256 _insureeFee) public onlyAgent() {
+    eternalStorage.setUint(
+      StorageHelper.formatAddress("insurance.pool.insureeFeeRate", _insurancePoolAddress),
+      _insureeFee
+    );
 
-  //   emit InsurancePoolInsureeFeeUpdated(_insurancePoolAddress, _insureeFee);
-  // }
+    emit InsurancePoolInsureeFeeUpdated(_insurancePoolAddress, _insureeFee);
+  }
 
   function setServiceFee(address _insurancePoolAddress, uint256 _serviceFee) public onlyAgent() {
     eternalStorage.setUint(

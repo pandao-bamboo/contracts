@@ -4,7 +4,6 @@ pragma solidity 0.6.10;
 
 import "../tokens/InsuranceToken.sol";
 import "./StringHelper.sol";
-import "@nomiclabs/buidler/console.sol";
 
 library TokenHelper {
   event TokenCreated(string _tokenName, string _tokenSymbol, address indexed _tokenAddress);

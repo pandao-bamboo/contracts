@@ -38,8 +38,9 @@ contract Manager {
   }
 
   event InsurancePoolCreated(address indexed insurancePoolAddress, string symbol);
-
   event InsurancePoolPaused(address indexed insurancePoolAddress, string symbol);
+  event InsurancePoolInsureeFeeUpdated(address insurancePoolAddress, uint256 insureeFeeRate);
+  event InsurancePoolServiceFeeUpdated(address insurancePoolAddress, uint256 serviceFeeRate);
 
   constructor(address _eternalStorageAddress) public {
     eternalStorageAddress = _eternalStorageAddress;
@@ -89,13 +90,29 @@ contract Manager {
 
   function denyInsuranceClaim() public onlyAgent() {}
 
+  function createInsuranceClaim() public onlyAgent() {}
+
   function pauseNetwork() public onlyAgent() {}
 
   function pausePool() public onlyAgent() {}
 
-  function setInsureeFee() public onlyAgent() {}
+  // function setInsureeFee(address _insurancePoolAddress, uint256 _insureeFee) public onlyAgent() {
+  //   eternalStorage.setUint(
+  //     StorageHelper.formatAddress("insurance.pool.insureeFeeRate", _insurancePoolAddress),
+  //     _insureeFee
+  //   );
 
-  function setServiceFee() public onlyAgent() {}
+  //   emit InsurancePoolInsureeFeeUpdated(_insurancePoolAddress, _insureeFee);
+  // }
+
+  function setServiceFee(address _insurancePoolAddress, uint256 _serviceFee) public onlyAgent() {
+    eternalStorage.setUint(
+      StorageHelper.formatAddress("insurance.pool.serviceFeeRate", _insurancePoolAddress),
+      _serviceFee
+    );
+
+    emit InsurancePoolServiceFeeUpdated(_insurancePoolAddress, _serviceFee);
+  }
 
   function unpauseNetwork() public onlyAgent() {}
 

@@ -15,12 +15,14 @@ library TokenFactoryHelper {
     address insuredAssetAddress = _eternalStorage.getAddress(
       StorageHelper.formatAddress("insurance.pool.insuredAsset", _insurancePoolAddress)
     );
+
     ERC20 insuredAsset = ERC20(insuredAssetAddress);
 
     TokenFactory tokenFactory = TokenFactory(
       _eternalStorage.getAddress(StorageHelper.formatString("contract.name", "TokenFactory"))
     );
 
-    return tokenFactory.createTokens(_insurancePoolAddress, _coverageStartBlock, "BTC++");
+    return
+      tokenFactory.createTokens(_insurancePoolAddress, _coverageStartBlock, insuredAsset.symbol());
   }
 }

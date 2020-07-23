@@ -109,4 +109,76 @@ describe("PanDAO Contract Network: Manager Contract", () => {
       )
     ).to.be.revertedWith("PanDAO: UnAuthorized - Agent only");
   });
+
+  it("Should update the insureeFeeRate", async () => {
+    const ip = await manager.functions.createInsurancePool(
+      mockToken.address,
+      mockToken.symbol(),
+      5,
+      2,
+      currentBlockNumber,
+      coverageDuration
+    );
+
+    const insurancePoolAddress = await storageHelper.functions.getInsurancePoolAddress(
+      mockToken.address,
+      EternalStorage.address
+    );
+
+    expect(
+      await eternalStorage.functions.getUint(
+        storageFormat(
+          ["string", "address"],
+          ["insurance.pool.insureeFeeRate", insurancePoolAddress]
+        )
+      )
+    ).to.equal(5);
+
+    manager.functions.setInsureeFee(insurancePoolAddress, 3);
+
+    expect(
+      await eternalStorage.functions.getUint(
+        storageFormat(
+          ["string", "address"],
+          ["insurance.pool.insureeFeeRate", insurancePoolAddress]
+        )
+      )
+    ).to.equal(3);
+  });
+
+  it("Should update the serviceFeeRate", async () => {
+    const ip = await manager.functions.createInsurancePool(
+      mockToken.address,
+      mockToken.symbol(),
+      5,
+      2,
+      currentBlockNumber,
+      coverageDuration
+    );
+
+    const insurancePoolAddress = await storageHelper.functions.getInsurancePoolAddress(
+      mockToken.address,
+      EternalStorage.address
+    );
+
+    expect(
+      await eternalStorage.functions.getUint(
+        storageFormat(
+          ["string", "address"],
+          ["insurance.pool.serviceFeeRate", insurancePoolAddress]
+        )
+      )
+    ).to.equal(5);
+
+    manager.functions.setInsureeFee(insurancePoolAddress, 3);
+
+    expect(
+      await eternalStorage.functions.getUint(
+        storageFormat(
+          ["string", "address"],
+          ["insurance.pool.serviceFeeRate", insurancePoolAddress]
+        )
+      )
+    ).to.equal(3);
+  });
 });

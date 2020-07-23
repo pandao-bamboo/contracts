@@ -47,9 +47,11 @@ library StorageHelper {
     );
 
     _eternalStorage.setAddress(insurancePoolRegistryLocation, _insurancePoolAddress);
+    ERC20 insuredAsset = ERC20(_insuredAssetAddress);
 
     address[2] memory tokens = TokenFactoryHelper.createTokens(
       _insurancePoolAddress,
+      insuredAsset.symbol(),
       _coverageStartBlock,
       _eternalStorage
     );

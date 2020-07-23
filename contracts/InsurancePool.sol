@@ -10,9 +10,20 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@nomiclabs/buidler/console.sol";
 
 // Gelato Dependencies
-import { IGelatoCondition } from "@gelatonetwork/core/contracts/conditions/IGelatoCondition.sol";
-import { IGelatoCore, DataFlow, Task, Condition, Action, Operation, DataFlow, Provider } from "@gelatonetwork/core/contracts/gelato_core/interfaces/IGelatoCore.sol";
-import { IGelatoProviderModule } from "@gelatonetwork/core/contracts/provider_modules/IGelatoProviderModule.sol";
+import {IGelatoCondition} from "@gelatonetwork/core/contracts/conditions/IGelatoCondition.sol";
+import {
+  IGelatoCore,
+  DataFlow,
+  Task,
+  Condition,
+  Action,
+  Operation,
+  DataFlow,
+  Provider
+} from "@gelatonetwork/core/contracts/gelato_core/interfaces/IGelatoCore.sol";
+import {
+  IGelatoProviderModule
+} from "@gelatonetwork/core/contracts/provider_modules/IGelatoProviderModule.sol";
 
 /// @author PanDAO - https://pandao.org
 /// @title PanDAO Insurance Pool
@@ -121,7 +132,7 @@ contract InsurancePool {
     (uint256 totalPremiumAmount, uint256 daoFee) = calculateFeeAmounts(_amount);
 
     // Charge User fee
-    chargeUser(msg.sender, totalPremiumAmount, daoFee, insuredAssetAddress);
+    chargeInsuree(msg.sender, totalPremiumAmount, daoFee, insuredAssetAddress);
 
     // Issue Claim Tokens
     address claimsTokenAddress = eternalStorage.getAddress(
@@ -145,16 +156,14 @@ contract InsurancePool {
       block.number + coverageDuration,
       _termLengthInMonths - 1
     );
-
   }
-  function chargeUser(
+
+  function chargeInsuree(
     address _feePayer,
     uint256 _totalPremiumAmount,
     uint256 _daoFee,
     address _insuredAssetAddress
-  )
-    private
-  {
+  ) private {
     address daoFinance = eternalStorage.getAddress(StorageHelper.formatGet("dao.finance"));
 
     ERC20 insuredAsset = ERC20(_insuredAssetAddress);
@@ -165,9 +174,9 @@ contract InsurancePool {
   function calculateFeeAmounts(uint256 _amount)
     public
     view
-    returns(uint256 totalPremiumAmount, uint256 daoFee)
+    returns (uint256 totalPremiumAmount, uint256 daoFee)
   {
-    uint256 insureeFeeNum =  eternalStorage.getUint(
+    uint256 insureeFeeNum = eternalStorage.getUint(
       StorageHelper.formatAddress("insurance.pool.insureeFeeRate", address(this))
     );
 
@@ -175,11 +184,9 @@ contract InsurancePool {
       StorageHelper.formatAddress("insurance.pool.serviceFeeRate", address(this))
     );
 
-    totalPremiumAmount = SafeMath.div( SafeMath.mul(_amount, insureeFeeNum), 100);
-    daoFee = SafeMath.div( SafeMath.mul(totalPremiumAmount, serviceFeeNum), 100);
+    totalPremiumAmount = SafeMath.div(SafeMath.mul(_amount, insureeFeeNum), 100);
+    daoFee = SafeMath.div(SafeMath.mul(totalPremiumAmount, serviceFeeNum), 100);
   }
-
-  function createClaim() public {}
 
   function removeLiquidity(uint256 _amount) public payable {
     address insuredAssetAddress = eternalStorage.getAddress(
@@ -203,12 +210,8 @@ contract InsurancePool {
 
   function settlement() public {}
 
-
-
   // === Gelato Specific Functions === //
-
   // === Gelato Action === //
-
   // Action that will be executed by Gelato
   /// @dev function called by gelatoCore
   function payPremium(
@@ -218,11 +221,9 @@ contract InsurancePool {
     address _feePayer,
     uint256 _coverageRenewalBlock,
     uint8 _termLengthInMonths
-  )
-    external
-  {
+  ) external {
     address gelatoCore = eternalStorage.getAddress(StorageHelper.formatGet("gelato.core"));
-    require(msg.sender == gelatoCore);
+    require(msg.sender == gelatoCore, "PanDAO: Only Gelato can call this function");
 
     address insuredAssetAddress = eternalStorage.getAddress(
       StorageHelper.formatAddress("insurance.pool.insuredAsset", address(this))
@@ -235,11 +236,12 @@ contract InsurancePool {
       _termLengthInMonths > 0
     ) {
       // Charge User
-      chargeUser(_feePayer, _totalPremiumAmount, _daoFee, insuredAssetAddress);
+      chargeInsuree(_feePayer, _totalPremiumAmount, _daoFee, insuredAssetAddress);
 
       // Fetch coverageDuration
       uint256 coverageDuration = eternalStorage.getUint(
-      StorageHelper.formatAddress("insurance.pool.coverageDuration", address(this)));
+        StorageHelper.formatAddress("insurance.pool.coverageDuration", address(this))
+      );
 
       // Submit Task to Gelato for schedule monthly fee payments
       scheduleFutureFeePayment(
@@ -253,7 +255,6 @@ contract InsurancePool {
     } else {
       burnClaimTokens(_feePayer, _amount);
     }
-
   }
 
   function burnClaimTokens(address _tokenOwner, uint256 _amount) private {
@@ -269,19 +270,13 @@ contract InsurancePool {
     address _feePayer,
     address _insuredAssetAddress,
     uint256 _totalPremiumAmount
-  )
-    public
-    view
-    returns(bool isSufficient)
-  {
+  ) public view returns (bool isSufficient) {
     ERC20 insuredAsset = ERC20(_insuredAssetAddress);
     uint256 balance = insuredAsset.balanceOf(_feePayer);
     uint256 allowance = insuredAsset.allowance(_feePayer, address(this));
+
     if (balance >= _totalPremiumAmount && allowance >= _totalPremiumAmount) isSufficient = true;
   }
-
-
-  // === Submitting Task to Gelato === //
 
   /// @dev  Submit as Task to Gelato
   function scheduleFutureFeePayment(
@@ -291,16 +286,19 @@ contract InsurancePool {
     address _feePayer,
     uint256 _coverageRenewalBlock,
     uint8 _termLengthInMonths // e.g. == 11 from buyInsurance if default termLength == 12
-  )
-    private
-  {
+  ) private {
     // As these contracts are immutable, they can also be stored as constants / immutables in the contracts bytecode
     // to avoid state reads
-    IGelatoCore gelatoCore = IGelatoCore(eternalStorage.getAddress(StorageHelper.formatGet("gelato.core")));
-    address providerModuleAddress = eternalStorage.getAddress(StorageHelper.formatGet("gelato.providermodule"));
+    IGelatoCore gelatoCore = IGelatoCore(
+      eternalStorage.getAddress(StorageHelper.formatGet("gelato.core"))
+    );
+    address providerModuleAddress = eternalStorage.getAddress(
+      StorageHelper.formatGet("gelato.providermodule")
+    );
     address gelatoManager = eternalStorage.getAddress(StorageHelper.formatGet("gelato.manager"));
-    address conditionAddress = eternalStorage.getAddress(StorageHelper.formatGet("gelato.condition"));
-
+    address conditionAddress = eternalStorage.getAddress(
+      StorageHelper.formatGet("gelato.condition")
+    );
 
     // Create a Task Object, which defined what condition Gelato should monitor and what action Gelato should execute
     Condition memory condition = Condition({
@@ -319,12 +317,12 @@ contract InsurancePool {
     );
 
     Action memory action = Action({
-        addr: address(0),
-        data: payPremiumData,
-        operation: Operation.Call,
-        dataFlow: DataFlow.None,
-        value: 0,
-        termsOkCheck: false
+      addr: address(0),
+      data: payPremiumData,
+      operation: Operation.Call,
+      dataFlow: DataFlow.None,
+      value: 0,
+      termsOkCheck: false
     });
 
     Condition[] memory singleCondition = new Condition[](1);
@@ -347,5 +345,4 @@ contract InsurancePool {
     // Submit the Task to Gelato
     gelatoCore.submitTask(provider, task, 0);
   }
-
 }

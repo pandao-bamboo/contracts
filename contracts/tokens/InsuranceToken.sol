@@ -16,7 +16,7 @@ contract InsuranceToken is IERC20, Manager {
   constructor(
     string memory _name,
     string memory _symbol,
-    string memory _tokenType, // CLAIMS or COLLATERAL are valid token types
+    string memory _tokenType,
     address _insurancePoolAddress,
     address _eternalStorageAddress
   ) public ERC20(_name, _symbol) Manager(_eternalStorageAddress) {

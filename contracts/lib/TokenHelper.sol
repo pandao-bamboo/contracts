@@ -28,6 +28,7 @@ library TokenHelper {
     claimsToken = new InsuranceToken(
       claimsTokenName,
       "CPAN",
+      "CLAIMS",
       _insurancePoolAddress,
       _eternalStorageAddress
     );
@@ -57,6 +58,7 @@ library TokenHelper {
     collateralToken = new InsuranceToken(
       collateralTokenName,
       "RPAN",
+      "COLLATERAL",
       _insurancePoolAddress,
       _eternalStorageAddress
     );

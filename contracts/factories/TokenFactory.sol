@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: GPLv3
-
-pragma solidity 0.6.10;
+pragma solidity ^0.6.10;
 
 import "../lib/StorageHelper.sol";
 import "../lib/TokenHelper.sol";
-import "@nomiclabs/buidler/console.sol";
 
 contract TokenFactory {
   address internal eternalStorageAddress;
@@ -20,7 +18,7 @@ contract TokenFactory {
   ) external returns (address[2] memory tokens) {
     tokens = [
       address(
-        TokenHelper.createLiquidityToken(
+        TokenHelper.createCollateralToken(
           eternalStorageAddress,
           _insurancePoolAddress,
           _coverageStartBlock,

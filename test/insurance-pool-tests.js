@@ -67,35 +67,41 @@ describe("PanDAO Contract Network: Insurance Pool Contract", () => {
     ip = new ethers.Contract(InsurancePool.address, InsurancePool.abi, agent);
   });
 
-  it(`Should deposit ${testAmount} insurable tokens as liquidity to the Insurance Pool contract and receive an equal amount of LPAN Tokens`, async () => {
+  it(`Should deposit ${testAmount} insurable tokens as collateral to the Insurance Pool contract and receive an equal amount of RPAN Tokens`, async () => {
     await mockToken.functions.approve(InsurancePool.address, testAmount);
 
-    await ip.functions.addLiquidity(testAmount);
+    await ip.functions.addCollateral(testAmount);
 
-    const liquidityTokenAddress = await eternalStorage.functions.getAddress(
-      storageFormat(["string", "address"], ["insurance.pool.liquidityToken", InsurancePool.address])
+    const collateralTokenAddress = await eternalStorage.functions.getAddress(
+      storageFormat(
+        ["string", "address"],
+        ["insurance.pool.collateralToken", InsurancePool.address]
+      )
     );
 
-    const liquidityToken = new ethers.Contract(liquidityTokenAddress, InsuranceToken.abi, agent);
+    const collateralToken = new ethers.Contract(collateralTokenAddress, InsuranceToken.abi, agent);
 
     // check balances on the tokens themselves to confirm
-    expect(await liquidityToken.functions.balanceOf(agent._address)).to.equal(testAmount);
+    expect(await collateralToken.functions.balanceOf(agent._address)).to.equal(testAmount);
     expect(await mockToken.functions.balanceOf(InsurancePool.address)).to.equal(testAmount);
   });
 
-  it(`Should remove ${testAmount} insurable tokens from liquidity pool and burn an equal amount of LPAN Tokens`, async () => {
+  it(`Should remove ${testAmount} insurable tokens from collateral pool and burn an equal amount of RPAN Tokens`, async () => {
     await mockToken.functions.approve(InsurancePool.address, testAmount);
-    await ip.functions.addLiquidity(testAmount);
+    await ip.functions.addCollateral(testAmount);
 
-    await ip.functions.removeLiquidity(testAmount);
+    await ip.functions.removeCollateral(testAmount);
 
-    const liquidityTokenAddress = await eternalStorage.functions.getAddress(
-      storageFormat(["string", "address"], ["insurance.pool.liquidityToken", InsurancePool.address])
+    const collateralTokenAddress = await eternalStorage.functions.getAddress(
+      storageFormat(
+        ["string", "address"],
+        ["insurance.pool.collateralToken", InsurancePool.address]
+      )
     );
-    const liquidityToken = new ethers.Contract(liquidityTokenAddress, InsuranceToken.abi, agent);
+    const collateralToken = new ethers.Contract(collateralTokenAddress, InsuranceToken.abi, agent);
 
     // check balances on the tokens themselves to confirm
-    expect(await liquidityToken.functions.balanceOf(agent._address)).to.equal(0);
+    expect(await collateralToken.functions.balanceOf(agent._address)).to.equal(0);
     expect(await mockToken.functions.balanceOf(InsurancePool.address)).to.equal(0);
   });
 

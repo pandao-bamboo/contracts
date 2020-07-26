@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPLv3
 
-pragma solidity 0.6.10;
+pragma solidity ^0.6.10;
 pragma experimental ABIEncoderV2;
 
 import "./lib/StorageHelper.sol";
@@ -11,6 +11,14 @@ import "./InsurancePool.sol";
 /// @notice This contract is used for storing contract network data
 /// @dev PanDAO network contracts can read/write from this contract
 contract EternalStorage {
+  struct TokenStorage {
+    string name;
+    string symbol;
+    uint256 totalSupply;
+    mapping(address => uint256) balance;
+    mapping(address => mapping(address => uint256)) allowance;
+  }
+
   struct Storage {
     mapping(bytes32 => uint256) uIntStorage;
     mapping(bytes32 => string) stringStorage;
@@ -18,6 +26,7 @@ contract EternalStorage {
     mapping(bytes32 => bool) boolStorage;
     mapping(bytes32 => int256) intStorage;
     mapping(bytes32 => bytes) bytesStorage;
+    mapping(bytes32 => TokenStorage) tokenStorage;
   }
 
   Storage internal s;
@@ -79,6 +88,10 @@ contract EternalStorage {
     return s.bytesStorage[_key];
   }
 
+  function getToken(bytes32 _key) external view returns (TokenStorage) {
+    return s.tokenStorage[_key];
+  }
+
   //////////////////////////////
   /// @notice Setter Functions
   /////////////////////////////
@@ -131,6 +144,10 @@ contract EternalStorage {
     s.bytesStorage[_key] = _value;
   }
 
+  function setToken(bytes32 _key, TokenStorage _value) external {
+    s.tokenStorage[_key] = _value;
+  }
+
   //////////////////////////////
   /// @notice Delete Functions
   /////////////////////////////
@@ -177,5 +194,9 @@ contract EternalStorage {
   /// @param _key bytes32 location should be keccak256 and abi.encodePacked
   function deleteBytes(bytes32 _key) external {
     delete s.bytesStorage[_key];
+  }
+
+  function deleteToken(bytes32 _key) external {
+    delete s.tokenStorage[_key];
   }
 }

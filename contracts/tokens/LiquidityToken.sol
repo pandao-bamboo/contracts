@@ -1,69 +1,53 @@
 pragma solidity ^0.6.10;
 
 import "../Manager.sol";
-import "../EternalStorage.sol";
 
 import "../lib/StorageHelper.sol";
+import "../lib/SafeMath.sol";
 
-import "../interfaces/IERC20.sol";
-
-contract InsuranceToken is IERC20, Manager {
-  string memory internal storageLocation;
-
+contract LiquidityToken is IERC20, Manager {
   event Approval(address indexed _owner, address indexed _spender, uint256 _amount);
   event Transfer(address indexed _from, address indexed _to, uint256 _amount);
 
   constructor(
     string memory _name,
     string memory _symbol,
-    string memory _tokenType, // CLAIMS or COLLATERAL are valid token types
-    address _insurancePoolAddress,
+    uint8 _decimals,
+    address _liquidityPoolAddress,
     address _eternalStorageAddress
   ) public ERC20(_name, _symbol) Manager(_eternalStorageAddress) {
-    require(
-      _tokenType == "CLAIMS" || _tokenType == "COLLATERAL",
-      "PanDAO: Invalid _tokenType for Insurance Token"
-    );
-
-    if (_tokenType == "CLAIMS") {
-      storageLocation = "insurance.pool.claimsToken";
-    } else if (_tokenType == "COLLATERAL") {
-      storageLocation = "insurance.pool.collateralToken";
-    }
-
     eternalStorage.setAddress(
       StorageHelper.formatAddress("contract.owner", address(this)),
-      _insurancePoolAddress
+      _liquidityPoolAddress
     );
-
     eternalStorage.setAddress(
-      StorageHelper.formatAddress(storageLocation, _insurancePoolAddress),
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", _liquidityPoolAddress),
       address(this)
     );
 
-    TokenStorage insuranceTokenStorage = TokenStorage({
+    TokenStorage liquidityTokenStorage = TokenStorage({
       name: _name,
       symbol: _symbol,
-      decimals: 18,
+      decimals: _decimals,
       totalSupply: 0
     });
 
     eternalStorage.setToken(
-      StorageHelper.formatAddress(storageLocation, address(this)),
-      insuranceTokenStorage
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this)),
+      liquidityTokenStorage
     );
   }
 
   function _mint(uint256 _amount) internal {
     TokenStorage token = eternalStorage.getToken(
-      StorageHelper.formatAddress(storageLocation, address(this))
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
     token.balance[address(this)] = SafeMath.add(token.balance[address(this)], _amount);
     token.totalSupply = SafeMath.add(token.totalSupply, _amount);
 
     eternalStorage.setToken(
-      StorageHelper.formatAddress(storageLocation, address(this)),
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this)),
       token
     );
 
@@ -72,7 +56,7 @@ contract InsuranceToken is IERC20, Manager {
 
   function _burn(uint256 _amount) internal {
     TokenStorage token = eternalStorage.getToken(
-      StorageHelper.formatAddress(storageLocation, address(this))
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
     require(token.balance[address(this)] >= _amount, "ERR_INSUFFICIENT_BAL");
@@ -81,7 +65,7 @@ contract InsuranceToken is IERC20, Manager {
     token.totalSupply = SafeMath.sub(token.totalSupply, _amount);
 
     eternalStorage.setToken(
-      StorageHelper.formatAddress(storageLocation, address(this)),
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this)),
       token
     );
 
@@ -94,7 +78,7 @@ contract InsuranceToken is IERC20, Manager {
     uint256 _amount
   ) internal {
     TokenStorage token = eternalStorage.getToken(
-      StorageHelper.formatAddress(storageLocation, address(this))
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
     require(token.balance[_from] >= _amount, "PanDAO Error: Insufficient Balance");
@@ -103,7 +87,7 @@ contract InsuranceToken is IERC20, Manager {
     token.balance[_to] = SafeMath.add(token.balance[_to], _amount);
 
     eternalStorage.setToken(
-      StorageHelper.formatAddress(storageLocation, address(this)),
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this)),
       token
     );
 
@@ -112,7 +96,7 @@ contract InsuranceToken is IERC20, Manager {
 
   function balanceOf(address _owner) external override view returns (uint256) {
     TokenStorage token = eternalStorage.getToken(
-      StorageHelper.formatAddress(storageLocation, address(this))
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
     return token.balance[_owner];
@@ -120,7 +104,7 @@ contract InsuranceToken is IERC20, Manager {
 
   function totalSupply() public override view returns (uint256) {
     TokenStorage token = eternalStorage.getToken(
-      StorageHelper.formatAddress(storageLocation, address(this))
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
     return token.totalSupply;
@@ -128,7 +112,7 @@ contract InsuranceToken is IERC20, Manager {
 
   function name() external view returns (string memory) {
     TokenStorage token = eternalStorage.getToken(
-      StorageHelper.formatAddress(storageLocation, address(this))
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
     return token.name;
@@ -136,7 +120,7 @@ contract InsuranceToken is IERC20, Manager {
 
   function symbol() external view returns (string memory) {
     TokenStorage token = eternalStorage.getToken(
-      StorageHelper.formatAddress(storageLocation, address(this))
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
     return token.symbol;
@@ -144,13 +128,13 @@ contract InsuranceToken is IERC20, Manager {
 
   function approve(address _spender, uint256 _amount) external override returns (bool) {
     TokenStorage token = eternalStorage.getToken(
-      StorageHelper.formatAddress(storageLocation, address(this))
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
     token.allowance[msg.sender][_spender] = _amount;
 
     eternalStorage.setToken(
-      StorageHelper.formatAddress(storageLocation, address(this)),
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this)),
       token
     );
 
@@ -161,7 +145,7 @@ contract InsuranceToken is IERC20, Manager {
 
   function increaseApproval(address _spender, uint256 _amount) external returns (bool) {
     TokenStorage token = eternalStorage.getToken(
-      StorageHelper.formatAddress(storageLocation, address(this))
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
     token.allowance[msg.sender][_spender] = SafeMath.add(
@@ -170,7 +154,7 @@ contract InsuranceToken is IERC20, Manager {
     );
 
     eternalStorage.setToken(
-      StorageHelper.formatAddress(storageLocation, address(this)),
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this)),
       token
     );
 
@@ -181,7 +165,7 @@ contract InsuranceToken is IERC20, Manager {
 
   function decreaseApproval(address _spender, uint256 _amount) external returns (bool) {
     TokenStorage token = eternalStorage.getToken(
-      StorageHelper.formatAddress(storageLocation, address(this))
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
     uint256 currentValue = token.allowance[msg.sender][_spender];
@@ -209,7 +193,7 @@ contract InsuranceToken is IERC20, Manager {
     uint256 _amount
   ) external overrides returns (bool) {
     TokenStorage token = eternalStorage.getToken(
-      StorageHelper.formatAddress(storageLocation, address(this))
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
     require(

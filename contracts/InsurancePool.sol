@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPLv3
-pragma solidity 0.6.10;
+pragma solidity ^0.6.10;
 pragma experimental ABIEncoderV2;
 
 import "./EternalStorage.sol";
@@ -7,7 +7,6 @@ import "./lib/StorageHelper.sol";
 import "./lib/StringHelper.sol";
 import "./tokens/InsuranceToken.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@nomiclabs/buidler/console.sol";
 
 // Gelato Dependencies
 import {IGelatoCondition} from "@gelatonetwork/core/contracts/conditions/IGelatoCondition.sol";
@@ -40,17 +39,17 @@ contract InsurancePool {
     uint256 coverageDuration
   );
 
-  event liquidityAddedToPool(
+  event collateralAddedToPool(
     address insurancePoolAddress,
     address insuredAssetAddress,
-    address liquidityProvider,
+    address collateralProvider,
     uint256 amount
   );
 
-  event liquidityRemovedFromPool(
+  event collateralRemovedFromPool(
     address insurancePoolAddress,
     address insuredAssetAddress,
-    address liquidityProvider,
+    address collateralProvider,
     uint256 amount
   );
 
@@ -65,6 +64,7 @@ contract InsurancePool {
   /// @dev _insureeFeeRate - _serviceFeeRate = insurerFee
   constructor(
     address _insuredAssetAddress,
+    address _liquidityPoolAddress,
     string memory _insuredAssetSymbol,
     uint256 _insureeFeeRate,
     uint256 _serviceFeeRate,
@@ -76,6 +76,7 @@ contract InsurancePool {
 
     bool poolRegistered = StorageHelper.registerInsurancePool(
       address(this),
+      _liquidityPoolAddress,
       eternalStorage.getAddress(StorageHelper.formatString("contract.name", "Manager")),
       _insuredAssetAddress,
       _insureeFeeRate,
@@ -98,22 +99,42 @@ contract InsurancePool {
     );
   }
 
-  /// @notice Adds liquidity for matching to the Insurance Pool
-  /// @param _amount Amount of liquidity to be added to the queue
-  function addLiquidity(uint256 _amount) public payable {
+  /// @notice Adds collateral for matching to the Insurance Pool
+  /// @param _amount Amount of collateral to be added to the queue
+  /// Todo: Update to pull from new Liquidity Pool instead of user wallet
+  function addCollateral(uint256 _amount) public payable {
     address insuredAssetAddress = eternalStorage.getAddress(
       StorageHelper.formatAddress("insurance.pool.insuredAsset", address(this))
     );
-    address liquidityTokenAddress = eternalStorage.getAddress(
-      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
+    address collateralTokenAddress = eternalStorage.getAddress(
+      StorageHelper.formatAddress("insurance.pool.collateralToken", address(this))
     );
 
     ERC20 insuredAsset = ERC20(insuredAssetAddress);
     insuredAsset.transferFrom(msg.sender, address(this), _amount);
 
-    InsuranceToken liquidityToken = InsuranceToken(liquidityTokenAddress);
-    liquidityToken.mint(msg.sender, _amount);
-    liquidityToken.approve(msg.sender, address(this), _amount);
+    InsuranceToken collateralToken = InsuranceToken(collateralTokenAddress);
+    // adjust balances on the token contract
+    // collateralToken.mint(msg.sender, _amount);
+    // collateralToken.approve(msg.sender, address(this), _amount);
+
+    StorageHelper.addCollateral(eternalStorage, msg.sender, address(this), _amount);
+
+    emit collateralAddedToPool(address(this), insuredAssetAddress, msg.sender, _amount);
+  }
+
+  /// @notice Adds liquidity for use in the Insurance Pool
+  /// @param _amount Amount of liquidity to be added to the queue
+  function addLiquidity(uint256 _amount) public payable {
+    address liquidityPoolAddress = eternalStorage.getAddress(
+      StorageHelper.formatAddress("insurance.pool.liquidityPool", address(this))
+    );
+    address insuredAssetAddress = eternalStorage.getAddress(
+      StorageHelper.formatAddress("insurance.pool.insuredAsset", address(this))
+    );
+
+    ERC20 insuredAsset = ERC20(insuredAssetAddress);
+    insuredAsset.transferFrom(msg.sender, liquidityPoolAddress, _amount);
 
     StorageHelper.addLiquidity(eternalStorage, msg.sender, address(this), _amount);
 
@@ -188,27 +209,25 @@ contract InsurancePool {
     daoFee = SafeMath.div(SafeMath.mul(totalPremiumAmount, serviceFeeNum), 100);
   }
 
-  function removeLiquidity(uint256 _amount) public payable {
+  function removeCollateral(uint256 _amount) public payable {
     address insuredAssetAddress = eternalStorage.getAddress(
       StorageHelper.formatAddress("insurance.pool.insuredAsset", address(this))
     );
-    address liquidityTokenAddress = eternalStorage.getAddress(
-      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
+    address collateralTokenAddress = eternalStorage.getAddress(
+      StorageHelper.formatAddress("insurance.pool.collateralToken", address(this))
     );
 
     ERC20 insuredAsset = ERC20(insuredAssetAddress);
     insuredAsset.transfer(msg.sender, _amount);
 
-    InsuranceToken liquidityToken = InsuranceToken(liquidityTokenAddress);
-    liquidityToken.transferFrom(msg.sender, address(this), _amount);
-    liquidityToken.burn(_amount);
+    InsuranceToken collateralToken = InsuranceToken(collateralTokenAddress);
+    collateralToken.transferFrom(msg.sender, address(this), _amount);
+    collateralToken.burn(_amount);
 
-    StorageHelper.removeLiquidity(eternalStorage, msg.sender, address(this), _amount);
+    StorageHelper.removeCollateral(eternalStorage, msg.sender, address(this), _amount);
 
-    emit liquidityRemovedFromPool(address(this), insuredAssetAddress, msg.sender, _amount);
+    emit collateralRemovedFromPool(address(this), insuredAssetAddress, msg.sender, _amount);
   }
-
-  function settlement() public {}
 
   // === Gelato Specific Functions === //
   // === Gelato Action === //

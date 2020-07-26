@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPLv3
 
-pragma solidity 0.6.10;
+pragma solidity ^0.6.10;
 
 import "@pie-dao/proxy/contracts/PProxyPausable.sol";
 
@@ -9,6 +9,7 @@ import "./EternalStorage.sol";
 import "./lib/StorageHelper.sol";
 import "./lib/StringHelper.sol";
 import "./InsurancePool.sol";
+import "./LiquidityPool.sol";
 
 /// @author PanDAO - https://pandao.org
 /// @title PanDAO Contract Network Manager
@@ -61,15 +62,19 @@ contract Manager {
     uint256 _coverageStartBlock,
     uint256 _coverageDuration
   ) public onlyAgent() {
-    require(
-      eternalStorage.getAddress(
-        StorageHelper.formatAddress("contract.address", _insuredAssetAddress)
-      ) == address(0),
-      "PanDAO: Insurance Pool already exists"
+    // check if there is a liquidity pool for the insurable asset
+    address liquidityPool = eternalStorage.getAddress(
+      StorageHelper.formatAddress("contract.address", _insuredAssetAddress)
     );
+
+    require(liquidityPool == address(0), "PanDAO: Insurance Pool already exists, use update");
+
+    LiquidityPool liquidityPool = new LiquidityPool(_insuredAssetAddress, eternalStorageAddress);
+    address liquidityPoolAddress = liquidityPool.getAddress();
 
     InsurancePool insurancePool = new InsurancePool(
       _insuredAssetAddress,
+      liquidityPoolAddress,
       _insuredAssetSymbol,
       _insureeFeeRate,
       _serviceFeeRate,

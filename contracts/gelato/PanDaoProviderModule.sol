@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPLv3
-pragma solidity 0.6.10;
+pragma solidity ^0.6.10;
 pragma experimental ABIEncoderV2;
 
 // Gelato Dependencies

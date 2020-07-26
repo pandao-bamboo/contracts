@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPLv3
 
-pragma solidity 0.6.10;
+pragma solidity ^0.6.10;
 
 import "../EternalStorage.sol";
 import "./StringHelper.sol";
@@ -10,6 +10,7 @@ library StorageHelper {
   /// @notice Initialized a new contract in EternalStorage
   function registerInsurancePool(
     address _insurancePoolAddress,
+    address _liquidityPoolAddress,
     address _contractOwnerAddress,
     address _insuredAssetAddress,
     uint256 _insureeFeeRate,
@@ -18,7 +19,7 @@ library StorageHelper {
     uint256 _coverageDuration,
     EternalStorage _eternalStorage
   ) external returns (bool) {
-    /// Global Contract Registration
+    // Global Contract Registration
     _eternalStorage.setAddress(
       formatAddress("contract.owner", _insurancePoolAddress),
       _contractOwnerAddress
@@ -28,7 +29,7 @@ library StorageHelper {
       _insurancePoolAddress
     );
 
-    /// Pool Contract Registration
+    // Pool Contract Registration
     uint256 insurancePoolRegistryCounter = _eternalStorage.getUint(
       formatAddress("insurance.pool.registry.counter", _insuredAssetAddress)
     );
@@ -58,6 +59,7 @@ library StorageHelper {
 
     storeInsurancePoolConfiguration(
       _insurancePoolAddress,
+      _liquidityPoolAddress,
       _insuredAssetAddress,
       _insureeFeeRate,
       _serviceFeeRate,
@@ -72,6 +74,7 @@ library StorageHelper {
 
   function storeInsurancePoolConfiguration(
     address _insurancePoolAddress,
+    address _liquidityPoolAddress,
     address _insuredAssetAddress,
     uint256 _insureeFeeRate,
     uint256 _serviceFeeRate,
@@ -80,9 +83,9 @@ library StorageHelper {
     address[2] memory _tokens,
     EternalStorage _eternalStorage
   ) internal returns (bool) {
-    /// Insurance Pool Configuration Data
+    // Insurance Pool Configuration Data
     _eternalStorage.setAddress(
-      formatAddress("insurance.pool.liquidityToken", _insurancePoolAddress),
+      formatAddress("insurance.pool.collateralToken", _insurancePoolAddress),
       _tokens[0]
     );
     _eternalStorage.setAddress(
@@ -113,15 +116,19 @@ library StorageHelper {
       formatAddress("insurance.pool.coverageDuration", _insurancePoolAddress),
       _coverageDuration
     );
+    _eternalStorage.setUint(
+      formatAddress("insurance.pool.liquidityPool", _insurancePoolAddress),
+      _liquidityPoolAddress
+    );
   }
 
-  /// @notice Add new liquidity to Insurance Pool
-  /// @param _liquidityProviderAddress address
+  /// @notice Add new collateral to Insurance Pool
+  /// @param _collateralProviderAddress address
   /// @param _insurancePoolAddress address
   /// @param _amount uint256
-  function addLiquidity(
+  function addCollateral(
     EternalStorage _eternalStorage,
-    address _liquidityProviderAddress,
+    address _collateralProviderAddress,
     address _insurancePoolAddress,
     uint256 _amount
   ) external {
@@ -138,7 +145,7 @@ library StorageHelper {
     bytes32 userBalanceLocation = formatAddress(
       StringHelper.concat(
         "insurance.pool.userBalance",
-        StringHelper.toString(_liquidityProviderAddress)
+        StringHelper.toString(_collateralProviderAddress)
       ),
       _insurancePoolAddress
     );
@@ -166,13 +173,13 @@ library StorageHelper {
     return insurancePoolAddress;
   }
 
-  /// @notice removes liquidity from Insurance pool
-  /// @param _liquidityProviderAddress address
+  /// @notice removes collateral from Insurance pool
+  /// @param _collateralProviderAddress address
   /// @param _insurancePoolAddress address
   /// @param _amount uint256
-  function removeLiquidity(
+  function removeCollateral(
     EternalStorage _eternalStorage,
-    address _liquidityProviderAddress,
+    address _collateralProviderAddress,
     address _insurancePoolAddress,
     uint256 _amount
   ) external {
@@ -188,7 +195,7 @@ library StorageHelper {
     bytes32 userBalanceLocation = formatAddress(
       StringHelper.concat(
         "insurance.pool.userBalance",
-        StringHelper.toString(_liquidityProviderAddress)
+        StringHelper.toString(_collateralProviderAddress)
       ),
       _insurancePoolAddress
     );

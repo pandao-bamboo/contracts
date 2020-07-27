@@ -63,11 +63,11 @@ contract Manager {
     uint256 _coverageDuration
   ) public onlyAgent() {
     // check if there is a liquidity pool for the insurable asset
-    address liquidityPool = eternalStorage.getAddress(
+    address liquidityPoolExists = eternalStorage.getAddress(
       StorageHelper.formatAddress("contract.address", _insuredAssetAddress)
     );
 
-    require(liquidityPool == address(0), "PanDAO: Insurance Pool already exists, use update");
+    require(liquidityPoolExists == address(0), "PanDAO: Insurance Pool already exists, use update");
 
     LiquidityPool liquidityPool = new LiquidityPool(_insuredAssetAddress, eternalStorageAddress);
     address liquidityPoolAddress = liquidityPool.getAddress();

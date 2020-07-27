@@ -5,8 +5,10 @@ pragma experimental ABIEncoderV2;
 import "./EternalStorage.sol";
 import "./lib/StorageHelper.sol";
 import "./lib/StringHelper.sol";
+import "./lib/SafeMath.sol";
+
 import "./tokens/InsuranceToken.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "./interfaces/IERC20.sol";
 
 // Gelato Dependencies
 import {IGelatoCondition} from "@gelatonetwork/core/contracts/conditions/IGelatoCondition.sol";
@@ -39,14 +41,14 @@ contract InsurancePool {
     uint256 coverageDuration
   );
 
-  event collateralAddedToPool(
+  event CollateralChanged(
     address insurancePoolAddress,
     address insuredAssetAddress,
     address collateralProvider,
     uint256 amount
   );
 
-  event collateralRemovedFromPool(
+  event LiquidityChanged(
     address insurancePoolAddress,
     address insuredAssetAddress,
     address collateralProvider,
@@ -110,7 +112,7 @@ contract InsurancePool {
       StorageHelper.formatAddress("insurance.pool.collateralToken", address(this))
     );
 
-    ERC20 insuredAsset = ERC20(insuredAssetAddress);
+    IERC20 insuredAsset = IERC20(insuredAssetAddress);
     insuredAsset.transferFrom(msg.sender, address(this), _amount);
 
     InsuranceToken collateralToken = InsuranceToken(collateralTokenAddress);
@@ -120,7 +122,7 @@ contract InsurancePool {
 
     StorageHelper.addCollateral(eternalStorage, msg.sender, address(this), _amount);
 
-    emit collateralAddedToPool(address(this), insuredAssetAddress, msg.sender, _amount);
+    emit CollateralChanged(address(this), insuredAssetAddress, msg.sender, _amount);
   }
 
   /// @notice Adds liquidity for use in the Insurance Pool
@@ -133,12 +135,12 @@ contract InsurancePool {
       StorageHelper.formatAddress("insurance.pool.insuredAsset", address(this))
     );
 
-    ERC20 insuredAsset = ERC20(insuredAssetAddress);
+    IERC20 insuredAsset = IERC20(insuredAssetAddress);
     insuredAsset.transferFrom(msg.sender, liquidityPoolAddress, _amount);
 
     StorageHelper.addLiquidity(eternalStorage, msg.sender, address(this), _amount);
 
-    emit liquidityAddedToPool(address(this), insuredAssetAddress, msg.sender, _amount);
+    emit LiquidityChanged(address(this), insuredAssetAddress, msg.sender, _amount);
   }
 
   function buyInsurance(
@@ -187,7 +189,7 @@ contract InsurancePool {
   ) private {
     address daoFinance = eternalStorage.getAddress(StorageHelper.formatGet("dao.finance"));
 
-    ERC20 insuredAsset = ERC20(_insuredAssetAddress);
+    IERC20 insuredAsset = IERC20(_insuredAssetAddress);
     insuredAsset.transferFrom(_feePayer, address(this), _totalPremiumAmount);
     insuredAsset.transfer(daoFinance, _daoFee);
   }
@@ -217,7 +219,7 @@ contract InsurancePool {
       StorageHelper.formatAddress("insurance.pool.collateralToken", address(this))
     );
 
-    ERC20 insuredAsset = ERC20(insuredAssetAddress);
+    IERC20 insuredAsset = IERC20(insuredAssetAddress);
     insuredAsset.transfer(msg.sender, _amount);
 
     InsuranceToken collateralToken = InsuranceToken(collateralTokenAddress);
@@ -226,7 +228,7 @@ contract InsurancePool {
 
     StorageHelper.removeCollateral(eternalStorage, msg.sender, address(this), _amount);
 
-    emit collateralRemovedFromPool(address(this), insuredAssetAddress, msg.sender, _amount);
+    emit CollateralChanged(address(this), insuredAssetAddress, msg.sender, _amount);
   }
 
   // === Gelato Specific Functions === //
@@ -290,7 +292,7 @@ contract InsurancePool {
     address _insuredAssetAddress,
     uint256 _totalPremiumAmount
   ) public view returns (bool isSufficient) {
-    ERC20 insuredAsset = ERC20(_insuredAssetAddress);
+    IERC20 insuredAsset = IERC20(_insuredAssetAddress);
     uint256 balance = insuredAsset.balanceOf(_feePayer);
     uint256 allowance = insuredAsset.allowance(_feePayer, address(this));
 

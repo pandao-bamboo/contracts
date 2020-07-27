@@ -13,6 +13,10 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     from: agent,
   });
 
+  const safeMath = await deploy("SafeMath", {
+    from: agent,
+  });
+
   const storageHelper = await deploy("StorageHelper", {
     from: agent,
     libraries: {
@@ -33,12 +37,14 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     tokenHelper.newlyDeployed &&
     storageHelper.newlyDeployed &&
     stringHelper.newlyDeployed &&
-    tokenFactoryHelper.newlyDeployed
+    tokenFactoryHelper.newlyDeployed &&
+    safeMath.newlyDeployed
   ) {
     log(`##### PanDAO: TokenFactoryHelper has been deployed: ${tokenFactoryHelper.address}`);
     log(`##### PanDAO: TokenHelper has been deployed: ${tokenHelper.address}`);
     log(`##### PanDAO: StorageHelper has been deployed: ${storageHelper.address}`);
     log(`##### PanDAO: StringHelper has been deployed: ${stringHelper.address}`);
+    log(`##### PanDAO: SafeMath has been deployed: ${safeMath.address}`);
   }
 };
 module.exports.tags = ["Libraries"];

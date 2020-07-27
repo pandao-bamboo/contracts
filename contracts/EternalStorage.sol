@@ -14,6 +14,7 @@ contract EternalStorage {
   struct TokenStorage {
     string name;
     string symbol;
+    uint8 decimals;
     uint256 totalSupply;
     mapping(address => uint256) balance;
     mapping(address => mapping(address => uint256)) allowance;
@@ -88,7 +89,7 @@ contract EternalStorage {
     return s.bytesStorage[_key];
   }
 
-  function getToken(bytes32 _key) external view returns (TokenStorage) {
+  function getToken(bytes32 _key) external view returns (TokenStorage memory) {
     return s.tokenStorage[_key];
   }
 
@@ -144,7 +145,7 @@ contract EternalStorage {
     s.bytesStorage[_key] = _value;
   }
 
-  function setToken(bytes32 _key, TokenStorage _value) external {
+  function setToken(bytes32 _key, TokenStorage memory _value) external {
     s.tokenStorage[_key] = _value;
   }
 

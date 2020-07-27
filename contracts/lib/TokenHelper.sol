@@ -3,6 +3,8 @@
 pragma solidity ^0.6.10;
 
 import "../tokens/InsuranceToken.sol";
+import "../tokens/LiquidityToken.sol";
+
 import "./StringHelper.sol";
 
 library TokenHelper {
@@ -28,7 +30,7 @@ library TokenHelper {
     claimsToken = new InsuranceToken(
       claimsTokenName,
       "CPAN",
-      "CLAIMS",
+      1,
       _insurancePoolAddress,
       _eternalStorageAddress
     );
@@ -58,7 +60,7 @@ library TokenHelper {
     collateralToken = new InsuranceToken(
       collateralTokenName,
       "RPAN",
-      "COLLATERAL",
+      2,
       _insurancePoolAddress,
       _eternalStorageAddress
     );
@@ -80,7 +82,7 @@ library TokenHelper {
       _insuredAssetSymbol
     );
 
-    ERC20 insuredAsset = ERC20(_insuredAssetAddress);
+    IERC20 insuredAsset = IERC20(_insuredAssetAddress);
 
     liquidityToken = new LiquidityToken(
       liquidityTokenName,

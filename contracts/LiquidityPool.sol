@@ -1,9 +1,13 @@
 pragma solidity ^0.6.10;
 
 import "./EternalStorage.sol";
+
 import "./lib/StorageHelper.sol";
 import "./lib/TokenHelper.sol";
 import "./lib/StringHelper.sol";
+
+import "./interfaces/IERC20.sol";
+
 import "./tokens/LiquidityToken.sol";
 
 contract LiquidityPool {
@@ -31,7 +35,7 @@ contract LiquidityPool {
     );
 
     // create liquidity token
-    ERC20 insuredAsset = ERC20(_insuredAssetAddress);
+    IERC20 insuredAsset = IERC20(_insuredAssetAddress);
 
     TokenHelper.createLiquidityToken(
       _insuredAssetAddress,

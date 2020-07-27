@@ -1,11 +1,16 @@
+// SPDX-License-Identifier: GPLv3
 pragma solidity ^0.6.10;
 
-import "../Manager.sol";
+import "../EternalStorage.sol";
 
 import "../lib/StorageHelper.sol";
 import "../lib/SafeMath.sol";
 
-contract LiquidityToken is IERC20, Manager {
+import "../interfaces/IERC20.sol";
+
+contract LiquidityToken is IERC20 {
+  EternalStorage eternalStorage;
+
   event Approval(address indexed _owner, address indexed _spender, uint256 _amount);
   event Transfer(address indexed _from, address indexed _to, uint256 _amount);
 
@@ -15,7 +20,9 @@ contract LiquidityToken is IERC20, Manager {
     uint8 _decimals,
     address _liquidityPoolAddress,
     address _eternalStorageAddress
-  ) public ERC20(_name, _symbol) Manager(_eternalStorageAddress) {
+  ) public IERC20() {
+    eternalStorage = EternalStorage(_eternalStorageAddress);
+
     eternalStorage.setAddress(
       StorageHelper.formatAddress("contract.owner", address(this)),
       _liquidityPoolAddress
@@ -25,7 +32,7 @@ contract LiquidityToken is IERC20, Manager {
       address(this)
     );
 
-    TokenStorage liquidityTokenStorage = TokenStorage({
+    EternalStorage.TokenStorage memory liquidityTokenStorage = EternalStorage.TokenStorage({
       name: _name,
       symbol: _symbol,
       decimals: _decimals,
@@ -39,7 +46,7 @@ contract LiquidityToken is IERC20, Manager {
   }
 
   function _mint(uint256 _amount) internal {
-    TokenStorage token = eternalStorage.getToken(
+    EternalStorage.TokenStorage memory token = eternalStorage.getToken(
       StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
@@ -55,7 +62,7 @@ contract LiquidityToken is IERC20, Manager {
   }
 
   function _burn(uint256 _amount) internal {
-    TokenStorage token = eternalStorage.getToken(
+    EternalStorage.TokenStorage memory token = eternalStorage.getToken(
       StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
@@ -77,7 +84,7 @@ contract LiquidityToken is IERC20, Manager {
     address _to,
     uint256 _amount
   ) internal {
-    TokenStorage token = eternalStorage.getToken(
+    EternalStorage.TokenStorage memory token = eternalStorage.getToken(
       StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
@@ -94,8 +101,16 @@ contract LiquidityToken is IERC20, Manager {
     emit Transfer(_from, _to, _amount);
   }
 
+  function allowance(address _owner, address _spender) external override view returns (uint256) {
+    EternalStorage.TokenStorage memory token = eternalStorage.getToken(
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
+    );
+
+    return token.allowance[_owner][_spender];
+  }
+
   function balanceOf(address _owner) external override view returns (uint256) {
-    TokenStorage token = eternalStorage.getToken(
+    EternalStorage.TokenStorage memory token = eternalStorage.getToken(
       StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
@@ -103,7 +118,7 @@ contract LiquidityToken is IERC20, Manager {
   }
 
   function totalSupply() public override view returns (uint256) {
-    TokenStorage token = eternalStorage.getToken(
+    EternalStorage.TokenStorage memory token = eternalStorage.getToken(
       StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
@@ -111,7 +126,7 @@ contract LiquidityToken is IERC20, Manager {
   }
 
   function name() external view returns (string memory) {
-    TokenStorage token = eternalStorage.getToken(
+    EternalStorage.TokenStorage memory token = eternalStorage.getToken(
       StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
@@ -119,15 +134,23 @@ contract LiquidityToken is IERC20, Manager {
   }
 
   function symbol() external view returns (string memory) {
-    TokenStorage token = eternalStorage.getToken(
+    EternalStorage.TokenStorage memory token = eternalStorage.getToken(
       StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
     return token.symbol;
   }
 
-  function approve(address _spender, uint256 _amount) external override returns (bool) {
-    TokenStorage token = eternalStorage.getToken(
+  function decimals() external view returns (string memory) {
+    EternalStorage.TokenStorage memory token = eternalStorage.getToken(
+      StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
+    );
+
+    return token.decimals;
+  }
+
+  function approve(address _spender, uint256 _amount) external override view returns (bool) {
+    EternalStorage.TokenStorage memory token = eternalStorage.getToken(
       StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
@@ -144,7 +167,7 @@ contract LiquidityToken is IERC20, Manager {
   }
 
   function increaseApproval(address _spender, uint256 _amount) external returns (bool) {
-    TokenStorage token = eternalStorage.getToken(
+    EternalStorage.TokenStorage memory token = eternalStorage.getToken(
       StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
@@ -164,7 +187,7 @@ contract LiquidityToken is IERC20, Manager {
   }
 
   function decreaseApproval(address _spender, uint256 _amount) external returns (bool) {
-    TokenStorage token = eternalStorage.getToken(
+    EternalStorage.TokenStorage memory token = eternalStorage.getToken(
       StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 
@@ -181,7 +204,7 @@ contract LiquidityToken is IERC20, Manager {
     return true;
   }
 
-  function transfer(address _to, uint256 _amount) external override returns (bool) {
+  function transfer(address _to, uint256 _amount) external override view returns (bool) {
     _move(msg.sender, _to, _amount);
 
     return true;
@@ -191,8 +214,8 @@ contract LiquidityToken is IERC20, Manager {
     address _from,
     address _to,
     uint256 _amount
-  ) external overrides returns (bool) {
-    TokenStorage token = eternalStorage.getToken(
+  ) external override returns (bool) {
+    EternalStorage.TokenStorage memory token = eternalStorage.getToken(
       StorageHelper.formatAddress("insurance.pool.liquidityToken", address(this))
     );
 

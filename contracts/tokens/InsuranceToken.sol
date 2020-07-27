@@ -154,7 +154,7 @@ contract InsuranceToken is IERC20, Manager {
       token
     );
 
-    emit Approval(msg.sender, _spender, _amount);
+    emit Approval(msg.sender, _spender, token.allowance[msg.sender][_spender]);
 
     return true;
   }
@@ -174,7 +174,7 @@ contract InsuranceToken is IERC20, Manager {
       token
     );
 
-    emit Approval(msg.sender, _spender, _amount);
+    emit Approval(msg.sender, _spender, token.allowance[msg.sender][_spender]);
 
     return true;
   }
@@ -192,7 +192,7 @@ contract InsuranceToken is IERC20, Manager {
       token.allowance[msg.sender][_spender] = SafeMath.sub(currentValue, _amount);
     }
 
-    emit Approval(msg.sender, _spender, _amount);
+    emit Approval(msg.sender, _spender, token.allowance[msg.sender][_spender]);
 
     return true;
   }

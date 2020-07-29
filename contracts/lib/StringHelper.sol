@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPLv3
 
-pragma solidity 0.6.10;
+pragma solidity ^0.6.10;
 
 library StringHelper {
   function concat(string memory _a, string memory _b) external pure returns (string memory) {

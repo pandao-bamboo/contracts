@@ -1,7 +1,7 @@
 {
   "name": "@pandao/contracts",
   "version": "0.0.1",
-  "description": "Insurance Liquidity Pool Implementation",
+  "description": "Insurance Collateral Pool Implementation",
   "main": "index.js",
   "scripts": {
     "deploy": "npx buidler deploy",
@@ -39,7 +39,6 @@
     "test": "test"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^3.1.0",
     "@pie-dao/proxy": "^0.0.6",
     "dotenv": "^8.2.0",
     "scrypt": "^6.0.3",

@@ -9,6 +9,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const TokenHelperDeployment = await deployments.get("TokenHelper");
   const StorageHelperDeployment = await deployments.get("StorageHelper");
   const StringHelperDeployment = await deployments.get("StringHelper");
+  const SafeMath = await deployments.get("SafeMath");
 
   const manager = await deploy("Manager", {
     from: agent,
@@ -17,6 +18,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
       TokenHelper: TokenHelperDeployment.address,
       StorageHelper: StorageHelperDeployment.address,
       StringHelper: StringHelperDeployment.address,
+      SafeMath: SafeMath.address,
     },
   });
 

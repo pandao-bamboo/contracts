@@ -31,7 +31,7 @@
     "chai": "^4.2.0",
     "ethereum-waffle": "^2.3.2",
     "ethers": "^4.0.44",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.21",
     "mocha": "^7.1.2",
     "prettier": "^2.0.5"
   },
